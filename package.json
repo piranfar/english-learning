@@ -1,0 +1,17 @@
+{
+  "name": "fluentbridge-ai",
+  "private": true,
+  "description": "FluentBridge AI — local-first English tutor (Django + React)",
+  "scripts": {
+    "dev": "concurrently -n django,react -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:all": "concurrently -n ollama,django,react -c magenta,blue,green \"npm run ollama\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "./venv/bin/python manage.py runserver 0.0.0.0:8000",
+    "dev:frontend": "cd frontend && npm run dev -- --host 0.0.0.0",
+    "ollama": "OLLAMA_HOST=http://127.0.0.1:11435 ollama serve",
+    "check": "./venv/bin/python manage.py check",
+    "build": "cd frontend && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

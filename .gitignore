@@ -1,0 +1,24 @@
+.env
+*.env
+.env.*
+!.env.example
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.py[cod]
+
+# macOS
+.DS_Store
+._*
+__MACOSX/
+
+# Node / frontend build
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Local database (excluded from git; included in hard-backup)
+db.sqlite3

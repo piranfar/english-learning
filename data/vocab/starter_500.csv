@@ -1,0 +1,111 @@
+word,lemma,part_of_speech,cefr_level,category,definition,persian_meaning,example,source,frequency_rank,collocations,shadowing_sentence,common_mistake,correction,notes,approved
+grocery,grocery,noun,A2,daily_life_us,A store that sells food.,مواد غذایی,I stopped at the grocery after work.,starter_curated,1,go grocery shopping,I stopped at the grocery after work.,,,,True
+lease,lease,noun,B1,daily_life_us,A rental contract for property.,اجاره‌نامه,We signed a one-year lease.,starter_curated,2,sign a lease,We signed a one-year lease.,,,,True
+roommate,roommate,noun,A2,daily_life_us,Someone you share housing with.,هم‌اتاقی,My roommate splits the rent.,starter_curated,3,find a roommate,My roommate splits the rent.,,,,True
+checkout,checkout,noun,A2,daily_life_us,The place you pay in a store.,صندوق پرداخت,The checkout line was long.,starter_curated,4,at checkout,The checkout line was long.,,,,True
+commute,commute,noun,B1,daily_life_us,Travel between home and work.,رفت‌وآمد,My commute takes forty minutes.,starter_curated,5,daily commute,My commute takes forty minutes.,,,,True
+utility,utility,noun,B1,daily_life_us,A basic service like electricity.,خدمات عمومی,Utilities are included in rent.,starter_curated,6,pay utilities,Utilities are included in rent.,,,,True
+receipt,receipt,noun,A2,daily_life_us,Proof of payment.,رسید,Keep the receipt for returns.,starter_curated,7,get a receipt,Keep the receipt for returns.,,,,True
+tip,tip,noun,A2,daily_life_us,Extra money for service.,انعام,A fifteen percent tip is common.,starter_curated,8,leave a tip,A fifteen percent tip is common.,,,,True
+subway,subway,noun,A2,daily_life_us,An underground train system.,مترو,Take the subway downtown.,starter_curated,9,ride the subway,Take the subway downtown.,,,,True
+landlord,landlord,noun,B1,daily_life_us,A person who rents property.,موجر,Call the landlord about the leak.,starter_curated,10,contact the landlord,Call the landlord about the leak.,,,,True
+neighbor,neighbor,noun,A2,daily_life_us,A person living nearby.,همسایه,Our neighbor is very friendly.,starter_curated,11,friendly neighbor,Our neighbor is very friendly.,,,,True
+furthermore,furthermore,adverb,B2,academic_writing,In addition; moreover.,علاوه بر این,"Furthermore, the results were consistent.",starter_curated,12,"Furthermore, evidence suggests","Furthermore, the results were consistent.",,,,True
+nevertheless,nevertheless,adverb,B2,academic_writing,In spite of that.,با این حال,"Nevertheless, limitations remain.",starter_curated,13,"Nevertheless, the study","Nevertheless, limitations remain.",,,,True
+consequently,consequently,adverb,B2,academic_writing,As a result.,در نتیجه,"Consequently, enrollment increased.",starter_curated,14,"Consequently, researchers","Consequently, enrollment increased.",,,,True
+moreover,moreover,adverb,B2,academic_writing,Besides; in addition.,علاوه بر آن,"Moreover, costs were reduced.",starter_curated,15,"Moreover, the data","Moreover, costs were reduced.",,,,True
+therefore,therefore,adverb,B1,academic_writing,For that reason.,بنابراین,"Therefore, we reject the hypothesis.",starter_curated,16,"Therefore, the author","Therefore, we reject the hypothesis.",,,,True
+whereas,whereas,conjunction,B2,academic_writing,In contrast; while.,در حالی که,"Group A improved, whereas Group B did not.",starter_curated,17,whereas previous studies,"Group A improved, whereas Group B did not.",,,,True
+hence,hence,adverb,B2,academic_writing,For this reason.,از این رو,"Hence, further study is needed.",starter_curated,18,"Hence, the conclusion","Hence, further study is needed.",,,,True
+clarify,clarify,verb,B1,academic_writing,To make something clear.,روشن کردن,Please clarify your main argument.,starter_curated,19,clarify the point,Please clarify your main argument.,,,,True
+argue,argue,verb,B1,academic_writing,To give reasons for a view.,استدلال کردن,The author argues that policy failed.,starter_curated,20,argue that,The author argues that policy failed.,,,,True
+demonstrate,demonstrate,verb,B1,academic_writing,To show clearly.,نشان دادن,The chart demonstrates a clear trend.,starter_curated,21,demonstrate that,The chart demonstrates a clear trend.,,,,True
+illustrate,illustrate,verb,B1,academic_writing,To explain with examples.,مثال زدن,This case illustrates the problem.,starter_curated,22,illustrate the concept,This case illustrates the problem.,,,,True
+analyze,analyze,verb,B1,toefl_academic,To examine in detail.,تحلیل کردن,Researchers analyze data before publishing.,starter_curated,23,analyze the data,Researchers analyze data before publishing.,,,,True
+hypothesis,hypothesis,noun,B2,toefl_academic,An idea tested by research.,فرضیه,The hypothesis was supported.,starter_curated,24,test a hypothesis,The hypothesis was supported.,,,,True
+significant,significant,adjective,B1,toefl_academic,Important or noticeable.,قابل توجه,There was a significant increase.,starter_curated,25,statistically significant,There was a significant increase.,,,,True
+correlate,correlate,verb,B2,toefl_academic,To have a mutual relationship.,همبستگی داشتن,Stress correlates with poor sleep.,starter_curated,26,correlate with,Stress correlates with poor sleep.,,,,True
+methodology,methodology,noun,B2,toefl_academic,System of methods in study.,متدولوژی,The methodology section explains the design.,starter_curated,27,research methodology,The methodology section explains the design.,,,,True
+empirical,empirical,adjective,B2,toefl_academic,Based on observation.,تجربی,Empirical evidence supports the claim.,starter_curated,28,empirical study,Empirical evidence supports the claim.,,,,True
+variable,variable,noun,B2,toefl_academic,A factor that can change.,متغیر,Temperature is a key variable.,starter_curated,29,independent variable,Temperature is a key variable.,,,,True
+inference,inference,noun,B2,toefl_academic,A conclusion from evidence.,استنتاج,We draw an inference from the data.,starter_curated,30,make an inference,We draw an inference from the data.,,,,True
+validity,validity,noun,B2,toefl_academic,Quality of being logically sound.,روایی,The study checks validity.,starter_curated,31,internal validity,The study checks validity.,,,,True
+paradigm,paradigm,noun,C1,toefl_academic,A typical model or pattern.,پارادایم,A new paradigm changed the field.,starter_curated,32,dominant paradigm,A new paradigm changed the field.,,,,True
+synthesize,synthesize,verb,B2,toefl_academic,To combine ideas.,ترکیب کردن,Students synthesize sources in essays.,starter_curated,33,synthesize information,Students synthesize sources in essays.,,,,True
+enrollment,enrollment,noun,B1,university,Registering for school.,ثبت‌نام,Enrollment closes next Friday.,starter_curated,34,student enrollment,Enrollment closes next Friday.,,,,True
+syllabus,syllabus,noun,B1,university,A course outline.,سیلabus,The syllabus lists assignments.,starter_curated,35,course syllabus,The syllabus lists assignments.,,,,True
+prerequisite,prerequisite,noun,B2,university,A required prior course.,پیش‌نیاز,Calculus is a prerequisite.,starter_curated,36,prerequisite course,Calculus is a prerequisite.,,,,True
+tuition,tuition,noun,B1,university,Money paid for instruction.,شهریه,Tuition increased this year.,starter_curated,37,tuition fees,Tuition increased this year.,,,,True
+semester,semester,noun,B1,university,Half of an academic year.,ترم,She studied abroad last semester.,starter_curated,38,fall semester,She studied abroad last semester.,,,,True
+dormitory,dormitory,noun,B1,university,Student residence.,خوابگاه,He lives in a dormitory.,starter_curated,39,campus dormitory,He lives in a dormitory.,,,,True
+registrar,registrar,noun,B2,university,Office for student records.,اداره آموزش,Visit the registrar to update records.,starter_curated,40,registrar office,Visit the registrar to update records.,,,,True
+scholarship,scholarship,noun,B1,university,Financial aid for study.,بورسیه,She won a merit scholarship.,starter_curated,41,apply for a scholarship,She won a merit scholarship.,,,,True
+credits,credits,noun,B1,university,Units for completed courses.,واحد درسی,The course is worth three credits.,starter_curated,42,earn credits,The course is worth three credits.,,,,True
+faculty,faculty,noun,B2,university,Teaching staff.,هیئت علمی,Faculty office hours are online.,starter_curated,43,faculty member,Faculty office hours are online.,,,,True
+thesis,thesis,noun,B2,university,A long research paper.,پایان‌نامه,He is writing his thesis.,starter_curated,44,master's thesis,He is writing his thesis.,,,,True
+diagnosis,diagnosis,noun,B1,healthcare,Identification of disease.,تشخیص,The diagnosis was confirmed.,starter_curated,45,accurate diagnosis,The diagnosis was confirmed.,,,,True
+prescription,prescription,noun,B1,healthcare,Doctor's order for medicine.,نسخه,The pharmacist filled the prescription.,starter_curated,46,write a prescription,The pharmacist filled the prescription.,,,,True
+symptom,symptom,noun,B1,healthcare,A sign of illness.,علامت,Fever is a common symptom.,starter_curated,47,common symptoms,Fever is a common symptom.,,,,True
+vaccination,vaccination,noun,B1,healthcare,Treatment to prevent disease.,واکسیناسیون,Vaccination reduces infection risk.,starter_curated,48,get a vaccination,Vaccination reduces infection risk.,,,,True
+chronic,chronic,adjective,B2,healthcare,Long-lasting condition.,مزمن,Diabetes is chronic.,starter_curated,49,chronic disease,Diabetes is chronic.,,,,True
+physician,physician,noun,B2,healthcare,A medical doctor.,پزشک,Ask your physician about side effects.,starter_curated,50,primary physician,Ask your physician about side effects.,,,,True
+referral,referral,noun,B2,healthcare,Sending patient to specialist.,ارجاع,You need a referral.,starter_curated,51,doctor referral,You need a referral.,,,,True
+pharmacy,pharmacy,noun,A2,healthcare,Place where medicine is sold.,داروخانه,The pharmacy opens at eight.,starter_curated,52,local pharmacy,The pharmacy opens at eight.,,,,True
+treatment,treatment,noun,B1,healthcare,Medical care.,درمان,Early treatment improves outcomes.,starter_curated,53,medical treatment,Early treatment improves outcomes.,,,,True
+preventive,preventive,adjective,B2,healthcare,Intended to stop disease.,پیشگیرانه,Preventive care includes screenings.,starter_curated,54,preventive medicine,Preventive care includes screenings.,,,,True
+screening,screening,noun,B1,healthcare,Testing for disease early.,غربالگری,Screening detected the issue.,starter_curated,55,health screening,Screening detected the issue.,,,,True
+bacteria,bacteria,noun,B1,microbiology,Microscopic organisms.,باکتری,Some bacteria are beneficial.,starter_curated,56,harmful bacteria,Some bacteria are beneficial.,,,,True
+virus,virus,noun,B1,microbiology,A tiny infectious agent.,ویروس,The virus spreads through droplets.,starter_curated,57,influenza virus,The virus spreads through droplets.,,,,True
+pathogen,pathogen,noun,B2,microbiology,Organism causing disease.,عامل بیماری,The lab identified the pathogen.,starter_curated,58,bacterial pathogen,The lab identified the pathogen.,,,,True
+antibiotic,antibiotic,noun,B1,microbiology,Medicine that kills bacteria.,آنتی‌بیotic,Antibiotics do not treat viruses.,starter_curated,59,take antibiotics,Antibiotics do not treat viruses.,,,,True
+culture,culture,noun,B2,microbiology,Growing microorganisms for study.,کشت,They sent a blood culture.,starter_curated,60,bacterial culture,They sent a blood culture.,,,,True
+specimen,specimen,noun,B2,microbiology,A sample for testing.,نمونه,Collect the specimen carefully.,starter_curated,61,tissue specimen,Collect the specimen carefully.,,,,True
+immune,immune,adjective,B1,microbiology,Protected against disease.,ایمن,Vaccines help you become immune.,starter_curated,62,immune system,Vaccines help you become immune.,,,,True
+genome,genome,noun,B2,microbiology,All genetic material.,ژنوم,Scientists sequenced the genome.,starter_curated,63,human genome,Scientists sequenced the genome.,,,,True
+enzyme,enzyme,noun,B2,microbiology,Protein that speeds reactions.,آنزیم,Enzymes break down nutrients.,starter_curated,64,digestive enzyme,Enzymes break down nutrients.,,,,True
+mutation,mutation,noun,B2,microbiology,Change in genetic material.,جهش,The mutation affects function.,starter_curated,65,genetic mutation,The mutation affects function.,,,,True
+strain,strain,noun,B2,microbiology,Subtype of microorganism.,سویه,A new strain was detected.,starter_curated,66,bacterial strain,A new strain was detected.,,,,True
+visa,visa,noun,B1,immigration,Permission to enter a country.,ویزا,She applied for a student visa.,starter_curated,67,student visa,She applied for a student visa.,,,,True
+residency,residency,noun,B2,immigration,Legal right to live somewhere.,اقامت,Permanent residency takes years.,starter_curated,68,permanent residency,Permanent residency takes years.,,,,True
+citizenship,citizenship,noun,B1,immigration,Legal membership in a country.,تابعیت,Citizenship requires an exam.,starter_curated,69,apply for citizenship,Citizenship requires an exam.,,,,True
+passport,passport,noun,A2,immigration,Official travel document.,گذرنامه,Renew your passport before travel.,starter_curated,70,valid passport,Renew your passport before travel.,,,,True
+customs,customs,noun,B1,immigration,Border control for goods.,گمرک,Declare items at customs.,starter_curated,71,customs declaration,Declare items at customs.,,,,True
+green card,green card,noun,B1,immigration,US permanent resident card.,گرین کارت,He received his green card.,starter_curated,72,green card holder,He received his green card.,,,,True
+asylum,asylum,noun,B2,immigration,Protection for refugees.,پناهندگی,They applied for asylum.,starter_curated,73,seek asylum,They applied for asylum.,,,,True
+sponsor,sponsor,noun,B1,immigration,Supporter of an applicant.,حامی,You need a sponsor for the visa.,starter_curated,74,visa sponsor,You need a sponsor for the visa.,,,,True
+documentation,documentation,noun,B1,immigration,Official papers required.,مدارک,Gather all documentation.,starter_curated,75,required documentation,Gather all documentation.,,,,True
+eligibility,eligibility,noun,B2,immigration,Qualification for a program.,صلاحیت,Check eligibility online.,starter_curated,76,eligibility requirements,Check eligibility online.,,,,True
+renewal,renewal,noun,B1,immigration,Extending document validity.,تمدید,Visa renewal can take weeks.,starter_curated,77,visa renewal,Visa renewal can take weeks.,,,,True
+look up,look up,phrasal verb,B1,phrasal_verbs,Search for information.,جستجو کردن,Look up the word in a dictionary.,starter_curated,78,look up a word,Look up the word in a dictionary.,,,,True
+figure out,figure out,phrasal verb,B1,phrasal_verbs,Understand or solve.,فهمیدن,I can't figure out this problem.,starter_curated,79,figure out how,I can't figure out this problem.,,,,True
+carry out,carry out,phrasal verb,B2,phrasal_verbs,Perform or conduct.,انجام دادن,Carry out the experiment.,starter_curated,80,carry out research,Carry out the experiment.,,,,True
+set up,set up,phrasal verb,B1,phrasal_verbs,Arrange or establish.,راه‌اندازی کردن,Set up a study schedule.,starter_curated,81,set up a meeting,Set up a study schedule.,,,,True
+break down,break down,phrasal verb,B1,phrasal_verbs,Divide into parts.,تجزیه کردن,Break down the essay.,starter_curated,82,break down the problem,Break down the essay.,,,,True
+point out,point out,phrasal verb,B1,phrasal_verbs,Indicate or mention.,اشاره کردن,She pointed out an error.,starter_curated,83,point out that,She pointed out an error.,,,,True
+come up with,come up with,phrasal verb,B1,phrasal_verbs,Produce an idea.,پیشنهاد دادن,Come up with a thesis.,starter_curated,84,come up with a solution,Come up with a thesis.,,,,True
+turn in,turn in,phrasal verb,A2,phrasal_verbs,Submit work.,تحویل دادن,Turn in the assignment.,starter_curated,85,turn in homework,Turn in the assignment.,,,,True
+fill out,fill out,phrasal verb,A2,phrasal_verbs,Complete a form.,پر کردن,Fill out the application.,starter_curated,86,fill out a form,Fill out the application.,,,,True
+go over,go over,phrasal verb,B1,phrasal_verbs,Review carefully.,مرور کردن,Go over your notes.,starter_curated,87,go over the material,Go over your notes.,,,,True
+run into,run into,phrasal verb,B1,phrasal_verbs,Meet unexpectedly.,برخوردن با,I ran into my professor.,starter_curated,88,run into trouble,I ran into my professor.,,,,True
+make a decision,make a decision,collocation,B1,collocations,Choose after thinking.,تصمیم گرفتن,You need to make a decision.,starter_curated,89,make a final decision,You need to make a decision.,,,,True
+take responsibility,take responsibility,collocation,B2,collocations,Accept duty.,مسئولیت پذیرفتن,Leaders take responsibility.,starter_curated,90,take full responsibility,Leaders take responsibility.,,,,True
+conduct research,conduct research,collocation,B2,collocations,Do systematic study.,تحقیق انجام دادن,She conducts research on cancer.,starter_curated,91,conduct a study,She conducts research on cancer.,,,,True
+raise a question,raise a question,collocation,B2,collocations,Bring up an issue.,سؤالی مطرح کردن,The article raises a question.,starter_curated,92,raise an important question,The article raises a question.,,,,True
+pose a problem,pose a problem,collocation,B2,collocations,Create a difficulty.,مشکل ایجاد کردن,Funding poses a problem.,starter_curated,93,pose a challenge,Funding poses a problem.,,,,True
+reach a conclusion,reach a conclusion,collocation,B2,collocations,Decide after analysis.,به نتیجه رسیدن,We reached a conclusion.,starter_curated,94,reach a clear conclusion,We reached a conclusion.,,,,True
+draw attention,draw attention,collocation,B2,collocations,Make people notice.,توجه جلب کردن,The headline drew attention.,starter_curated,95,draw attention to,The headline drew attention.,,,,True
+meet requirements,meet requirements,collocation,B1,collocations,Satisfy conditions.,برآورده کردن الزامات,Your essay must meet requirements.,starter_curated,96,meet the requirements,Your essay must meet requirements.,,,,True
+submit an application,submit an application,collocation,B1,collocations,Send a formal request.,ارسال درخواست,Submit an application by Friday.,starter_curated,97,submit an online application,Submit an application by Friday.,,,,True
+gain experience,gain experience,collocation,B1,collocations,Acquire knowledge.,تجربه کسب کردن,Internships help gain experience.,starter_curated,98,gain practical experience,Internships help gain experience.,,,,True
+make progress,make progress,collocation,B1,collocations,Move forward.,پیشرفت کردن,You are making progress.,starter_curated,99,make steady progress,You are making progress.,,,,True
+discuss about,discuss about,error pattern,B1,common_errors_persian_speakers,Incorrect: discuss about. Correct: discuss.,اشتباه رایج: discuss about,We discussed the topic.,starter_curated,100,I discussed the results (not discuss about),We discussed the topic.,discuss about,We discussed the topic.,,True
+informations,informations,error pattern,B1,common_errors_persian_speakers,Information is uncountable.,information جمع ندارد,The information is useful.,starter_curated,101,too much information (not informations),The information is useful.,informations,The information is useful.,,True
+consist in,consist in,error pattern,B2,common_errors_persian_speakers,Correct collocation: consist of.,consist of نه consist in,The team consists of five members.,starter_curated,102,consist of several parts,The team consists of five members.,consist in,The team consists of five members.,,True
+suggest to do,suggest to do,error pattern,B1,common_errors_persian_speakers,Correct: suggest doing or suggest that.,suggest to do غلط است,She suggested studying together.,starter_curated,103,He suggested that we leave early,She suggested studying together.,suggest to do,She suggested studying together.,,True
+repeat again,repeat again,error pattern,A2,common_errors_persian_speakers,Repeat already means again.,repeat again تکرار است,Please repeat the question.,starter_curated,104,Can you repeat that? (not repeat again),Please repeat the question.,repeat again,Please repeat the question.,,True
+more easier,more easier,error pattern,A2,common_errors_persian_speakers,"Use easier, not more easier.",more easier غلط است,This exercise is easier.,starter_curated,105,much easier (not more easier),This exercise is easier.,more easier,This exercise is easier.,,True
+according to me,according to me,error pattern,B1,common_errors_persian_speakers,Prefer in my opinion.,according to me غیررسمی/غلط,"In my opinion, the data support this.",starter_curated,106,"In my view, the policy failed","In my opinion, the data support this.",according to me,"In my opinion, the data support this.",,True
+despite of,despite of,error pattern,B1,common_errors_persian_speakers,Use despite or in spite of.,despite of غلط است,"Despite the rain, we continued.",starter_curated,107,despite the challenges,"Despite the rain, we continued.",despite of,"Despite the rain, we continued.",,True
+academic lecture about,academic lecture about,error pattern,B2,common_errors_persian_speakers,Lecture on/about topic; lecture about is awkward.,lecture on بهتر است,She gave a lecture on microbiology.,starter_curated,108,a lecture on climate change,She gave a lecture on microbiology.,academic lecture about,She gave a lecture on microbiology.,,True
+do a mistake,do a mistake,error pattern,A2,common_errors_persian_speakers,Correct: make a mistake.,make a mistake نه do,I made a mistake on the test.,starter_curated,109,make a common mistake,I made a mistake on the test.,do a mistake,I made a mistake on the test.,,True
+strong rain,strong rain,error pattern,B1,common_errors_persian_speakers,Prefer heavy rain.,heavy rain نه strong rain,There was heavy rain yesterday.,starter_curated,110,heavy traffic / heavy rain,There was heavy rain yesterday.,strong rain,There was heavy rain yesterday.,,True

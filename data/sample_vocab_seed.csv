@@ -1,0 +1,6 @@
+word,lemma,part_of_speech,cefr_level,category,definition,persian_meaning,example,source,frequency_rank
+analyze,analyze,verb,B1,toefl_academic,To examine something in detail to understand it.,تحلیل کردن,Researchers analyze data before publishing results.,curated,1
+hypothesis,hypothesis,noun,B2,university,An idea or explanation that you test through study and experiments.,فرضیه,The hypothesis was supported by the lab results.,curated,2
+significant,significant,adjective,B1,academic_writing,Important or large enough to be noticed.,قابل توجه,There was a significant increase in test scores.,curated,3
+appointment,appointment,noun,A2,daily_life_us,A scheduled meeting with a doctor or official.,قرار ملاقات,I made an appointment with my doctor for Monday.,curated,4
+immigration,immigration,noun,B1,immigration,The process of coming to live permanently in another country.,مهاجرت,Immigration policies affect international students.,curated,5
