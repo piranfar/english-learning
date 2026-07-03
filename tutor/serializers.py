@@ -322,6 +322,11 @@ class LessonCompleteSerializer(serializers.Serializer):
     notes = serializers.CharField(required=False, allow_blank=True, default="")
 
 
+class LessonQuizSubmitSerializer(serializers.Serializer):
+    topic_id = serializers.IntegerField()
+    answers = serializers.DictField(child=serializers.IntegerField())
+
+
 class AdminPromptUpdateSerializer(serializers.Serializer):
     title = serializers.CharField(required=False)
     system_prompt = serializers.CharField(required=False, allow_blank=True)
@@ -333,6 +338,14 @@ class AdminPromptUpdateSerializer(serializers.Serializer):
 
 class ShadowingAttemptSerializer(serializers.Serializer):
     transcript = serializers.CharField()
+
+
+class ShadowingFromSentencesSerializer(serializers.Serializer):
+    sentences = serializers.ListField(
+        child=serializers.CharField(max_length=500),
+        min_length=1,
+        max_length=8,
+    )
 
 
 class VocabQuizMistakeSerializer(serializers.Serializer):

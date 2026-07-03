@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { generateTodayPlan, getTodayPlan, updatePlanItem } from '../api/client'
-import ProgressBar from '../components/ProgressBar'
+import { generateTodayPlan, updatePlanItem } from '../api/client'
+import ProgressBar from './ProgressBar'
 
 function getTaskStatus(item) {
   if (item.status === 'done' || item.completed) return 'Done'
@@ -9,7 +9,7 @@ function getTaskStatus(item) {
 }
 
 function getTaskRoute(item) {
-  return item.route || '/dashboard'
+  return item.route || '/today'
 }
 
 function getSkillLabel(item) {
@@ -107,53 +107,10 @@ function TaskSection({ title, items, limit, showAll, updatingId, onToggle }) {
   )
 }
 
-export default function Plan() {
-  const [plan, setPlan] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+export default function PlanTaskQueue({ plan, onPlanChange, planError, onPlanError }) {
   const [updatingId, setUpdatingId] = useState(null)
   const [generating, setGenerating] = useState(false)
   const [showAllTasks, setShowAllTasks] = useState(false)
-
-  useEffect(() => {
-    loadPlan()
-  }, [])
-
-  async function loadPlan() {
-    setLoading(true)
-    setError('')
-    try {
-      setPlan(await getTodayPlan())
-    } catch (err) {
-      setError(err.message || 'Failed to load plan')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handleGeneratePlan() {
-    setGenerating(true)
-    setError('')
-    try {
-      setPlan(await generateTodayPlan())
-    } catch (err) {
-      setError(err.message || 'Failed to generate plan')
-    } finally {
-      setGenerating(false)
-    }
-  }
-
-  async function toggleItem(item) {
-    setUpdatingId(item.id)
-    setError('')
-    try {
-      setPlan(await updatePlanItem(item.id, !item.completed))
-    } catch (err) {
-      setError(err.message || 'Failed to update item')
-    } finally {
-      setUpdatingId(null)
-    }
-  }
 
   const progressPercent = useMemo(() => {
     if (!plan?.total_count) return 0
@@ -179,48 +136,44 @@ export default function Plan() {
     [orderedItems],
   )
 
-  const focusRoute = useMemo(() => {
-    const firstOpen = orderedItems.find((item) => !item.completed)
-    return firstOpen ? getTaskRoute(firstOpen) : '/plan'
-  }, [orderedItems])
-
-  if (loading) {
-    return (
-      <div className="page plan-page plan-compact">
-        <p className="muted">Loading today&apos;s plan…</p>
-      </div>
-    )
+  async function handleGeneratePlan() {
+    setGenerating(true)
+    onPlanError('')
+    try {
+      onPlanChange(await generateTodayPlan())
+    } catch (err) {
+      onPlanError(err.message || 'Failed to generate plan')
+    } finally {
+      setGenerating(false)
+    }
   }
 
-  if (!plan) {
-    return (
-      <div className="page plan-page plan-compact">
-        <p className="error">{error || 'Plan unavailable'}</p>
-      </div>
-    )
+  async function toggleItem(item) {
+    setUpdatingId(item.id)
+    onPlanError('')
+    try {
+      onPlanChange(await updatePlanItem(item.id, !item.completed))
+    } catch (err) {
+      onPlanError(err.message || 'Failed to update item')
+    } finally {
+      setUpdatingId(null)
+    }
   }
+
+  if (!plan) return null
 
   const hasPlan = plan.exists !== false && plan.total_count > 0
-  const summary = plan.summary || {}
 
   return (
-    <div className="page plan-page plan-compact">
-      <header className="page-header plan-page-header">
-        <h1>Today&apos;s Study Plan</h1>
-        <Link to="/roadmap" className="btn btn-secondary btn-sm plan-roadmap-link">
-          View curriculum roadmap
+    <section className="card today-plan-card" aria-label="Today's study plan">
+      <div className="today-plan-header">
+        <h2 className="dashboard-section-title">Today&apos;s plan</h2>
+        <Link to="/roadmap" className="btn btn-secondary btn-sm">
+          View roadmap
         </Link>
-      </header>
+      </div>
 
-      <section className="plan-summary-strip" aria-label="Plan summary">
-        <div className="plan-summary-item">
-          <span className="plan-summary-label">Vocabulary due</span>
-          <strong>{plan.vocab_due ?? 0}</strong>
-        </div>
-        <div className="plan-summary-item">
-          <span className="plan-summary-label">Mistakes due</span>
-          <strong>{plan.mistakes_due ?? 0}</strong>
-        </div>
+      <div className="plan-summary-strip" aria-label="Plan summary">
         <div className="plan-summary-item">
           <span className="plan-summary-label">Tasks complete</span>
           <strong>{plan.completed_count ?? 0}/{plan.total_count ?? 0}</strong>
@@ -229,37 +182,22 @@ export default function Plan() {
           <span className="plan-summary-label">Est. time today</span>
           <strong>{estimatedMinutes} min</strong>
         </div>
-      </section>
+      </div>
 
-      {error && <p className="error">{error}</p>}
+      {planError && <p className="error">{planError}</p>}
 
       {!hasPlan ? (
-        <section className="card plan-empty">
-          <h2>No plan yet</h2>
+        <div className="plan-empty">
           <p className="muted">
             Generate a personalized plan from due vocabulary, recent mistakes, and daily skill practice.
           </p>
           <button type="button" className="btn btn-sm" onClick={handleGeneratePlan} disabled={generating}>
             {generating ? 'Generating…' : "Generate today's plan"}
           </button>
-        </section>
+        </div>
       ) : (
         <>
-          <section className="card plan-focus-card plan-focus-compact">
-            <p className="plan-focus-kicker">Today&apos;s main focus</p>
-            <h2 className="plan-focus-title">{summary.main_focus || 'Balanced daily practice'}</h2>
-            {summary.why_it_matters && (
-              <p className="plan-focus-why muted">{summary.why_it_matters}</p>
-            )}
-            {summary.recommended_order?.length > 0 && (
-              <p className="plan-focus-order muted">Recommended order: top to bottom in the task queue.</p>
-            )}
-            <Link to={focusRoute} className="btn btn-sm">
-              Start focus task
-            </Link>
-          </section>
-
-          <section className="card plan-progress-compact">
+          <div className="plan-progress-compact">
             <ProgressBar
               label={`${plan.completed_count}/${plan.total_count} tasks complete`}
               valueLabel={`${progressPercent}%`}
@@ -270,9 +208,9 @@ export default function Plan() {
             {plan.progress?.completed && (
               <p className="plan-complete-msg muted">Day complete — great work!</p>
             )}
-          </section>
+          </div>
 
-          <section className="card plan-queue-card">
+          <div className="plan-queue-card">
             <TaskSection
               title="Priority tasks"
               items={grouped.priority}
@@ -311,9 +249,9 @@ export default function Plan() {
                 Show more tasks
               </button>
             )}
-          </section>
+          </div>
         </>
       )}
-    </div>
+    </section>
   )
 }

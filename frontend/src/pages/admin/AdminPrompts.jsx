@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   getAdminPrompts,
   resetAdminPrompt,
   updateAdminPrompt,
 } from '../../api/client'
+import {
+  groupPromptsBySkill,
+  taskLabelForType,
+} from '../../utils/adminTaskGroups'
 
 function ollamaModelNeedsTagWarning(modelName, provider) {
   if (provider !== 'ollama' || !modelName) return false
@@ -13,6 +17,7 @@ function ollamaModelNeedsTagWarning(modelName, provider) {
 export default function AdminPrompts() {
   const [prompts, setPrompts] = useState([])
   const [providerNotes, setProviderNotes] = useState({})
+  const [defaultAiProvider, setDefaultAiProvider] = useState('ollama')
   const [selectedId, setSelectedId] = useState(null)
   const [draft, setDraft] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -20,6 +25,18 @@ export default function AdminPrompts() {
   const [resetting, setResetting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [expandedGroup, setExpandedGroup] = useState(null)
+
+  const groupedPrompts = useMemo(
+    () => groupPromptsBySkill(prompts),
+    [prompts],
+  )
+
+  useEffect(() => {
+    if (!expandedGroup && groupedPrompts.length) {
+      setExpandedGroup(groupedPrompts[0].group)
+    }
+  }, [expandedGroup, groupedPrompts])
 
   useEffect(() => {
     loadPrompts()
@@ -32,6 +49,7 @@ export default function AdminPrompts() {
       const data = await getAdminPrompts()
       setPrompts(data.prompts || [])
       setProviderNotes(data.provider_notes || {})
+      setDefaultAiProvider(data.default_ai_provider || 'ollama')
       if (!selectedId && data.prompts?.length) {
         selectPrompt(data.prompts[0])
       }
@@ -108,8 +126,9 @@ export default function AdminPrompts() {
       <header className="page-header">
         <h2>Prompt management</h2>
         <p className="page-lead muted">
-          Staff-only. Learners never see this page. Ollama models need exact tags
-          (e.g. qwen2.5:7b).
+          Staff-only. Each skill has one prompt row per AI provider (Ollama, OpenAI, etc.).
+          Lessons use <strong>Grammar coach (Lesson chat)</strong> with the provider set in{' '}
+          <code>DEFAULT_AI_PROVIDER</code> (currently <strong>{defaultAiProvider}</strong>).
         </p>
       </header>
 
@@ -118,28 +137,61 @@ export default function AdminPrompts() {
 
       <div className="admin-prompts-layout">
         <aside className="card admin-prompts-list">
-          <h3>Templates</h3>
-          <ul className="admin-prompt-items">
-            {prompts.map((prompt) => (
-              <li key={prompt.id}>
-                <button
-                  type="button"
-                  className={`admin-prompt-item${
-                    selectedId === prompt.id ? ' active' : ''
-                  }`}
-                  onClick={() => selectPrompt(prompt)}
-                >
-                  <strong>{prompt.title}</strong>
-                  <span className="muted">
-                    {prompt.task_type} · {prompt.provider}
-                  </span>
-                  {prompt.is_empty && (
-                    <span className="prompt-model-warning">Empty</span>
-                  )}
-                </button>
-              </li>
-            ))}
-          </ul>
+          <h3>Tasks by skill</h3>
+          <p className="muted admin-prompts-list-lead">
+            Each row shows the AI model in use. Select a task to change its model or prompt.
+          </p>
+          {groupedPrompts.map(({ group, prompts: groupPrompts }) => (
+            <div key={group} className="admin-prompt-group">
+              <button
+                type="button"
+                className="admin-prompt-group-header"
+                onClick={() =>
+                  setExpandedGroup((prev) => (prev === group ? null : group))
+                }
+                aria-expanded={expandedGroup === group}
+              >
+                <strong>{group}</strong>
+                <span className="muted">{groupPrompts.length} tasks</span>
+              </button>
+              {expandedGroup === group && (
+                <ul className="admin-prompt-items">
+                  {groupPrompts.map((prompt) => {
+                    const isLiveLessonPrompt =
+                      prompt.task_type === 'grammar_coach' &&
+                      prompt.provider === defaultAiProvider &&
+                      prompt.is_active
+                    return (
+                    <li key={prompt.id}>
+                      <button
+                        type="button"
+                        className={`admin-prompt-item${
+                          selectedId === prompt.id ? ' active' : ''
+                        }${isLiveLessonPrompt ? ' admin-prompt-item-live' : ''}`}
+                        onClick={() => selectPrompt(prompt)}
+                      >
+                        <strong>{taskLabelForType(prompt.task_type)}</strong>
+                        {isLiveLessonPrompt && (
+                          <span className="admin-prompt-live-badge">Used for lessons now</span>
+                        )}
+                        <span className="admin-prompt-model">
+                          Model: {prompt.model_name || '—'}
+                        </span>
+                        <span className="muted">
+                          {prompt.provider}
+                          {!prompt.is_active && ' · inactive'}
+                        </span>
+                        {prompt.is_empty && (
+                          <span className="prompt-model-warning">Empty prompt</span>
+                        )}
+                      </button>
+                    </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </div>
+          ))}
         </aside>
 
         {draft && (
@@ -148,11 +200,22 @@ export default function AdminPrompts() {
               <div>
                 <h3>{draft.title}</h3>
                 <p className="muted">
-                  Track: <strong>{draft.task_type}</strong> · Provider:{' '}
-                  <strong>{draft.provider}</strong>
+                  Task:{' '}
+                  <strong>{taskLabelForType(draft.task_type)}</strong> (
+                  {draft.task_type}) · Provider: <strong>{draft.provider}</strong>
                 </p>
                 {providerNotes[draft.provider] && (
                   <p className="admin-provider-note">{providerNotes[draft.provider]}</p>
+                )}
+                {draft.task_type === 'grammar_coach' &&
+                  draft.provider === defaultAiProvider &&
+                  draft.is_active && (
+                  <p className="admin-prompt-live-note">
+                    This template generates lesson chat for all learners (provider:{' '}
+                    {defaultAiProvider}). Change <strong>Model name</strong> below to switch
+                    models, or set <code>DEFAULT_AI_PROVIDER</code> in <code>.env</code> to use
+                    a different provider row.
+                  </p>
                 )}
                 {draft.updated_at && (
                   <p className="muted">Last updated: {new Date(draft.updated_at).toLocaleString()}</p>
@@ -201,13 +264,17 @@ export default function AdminPrompts() {
             </label>
 
             <div className="form-row">
-              <label className="form-field">
-                Model
+              <label className="form-field admin-model-field">
+                Model name
                 <input
                   type="text"
                   value={draft.model_name}
                   onChange={(e) => setDraft({ ...draft, model_name: e.target.value })}
+                  placeholder="e.g. qwen2.5:7b or gpt-4o-mini"
                 />
+                <span className="muted form-hint">
+                  Ollama: use exact tag (model:tag). OpenAI: use API model id.
+                </span>
               </label>
               <label className="form-field">
                 Temperature

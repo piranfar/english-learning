@@ -10,6 +10,8 @@ from .views import (
     ChatView,
     DashboardView,
     LessonCompleteView,
+    LessonQuizSubmitView,
+    LessonQuizView,
     LessonRecommendationView,
     LessonStartRecommendedView,
     LessonTopicsView,
@@ -33,6 +35,7 @@ from .views import (
     ReadinessView,
     ShadowingAttemptAudioView,
     ShadowingAttemptView,
+    ShadowingFromSentencesView,
     ShadowingItemsListView,
     SpeakingAttemptAudioView,
     ToeflPromptView,
@@ -69,6 +72,8 @@ urlpatterns = [
         name="lesson-start-recommended",
     ),
     path("lesson/complete/", LessonCompleteView.as_view(), name="lesson-complete"),
+    path("lesson/quiz/", LessonQuizView.as_view(), name="lesson-quiz"),
+    path("lesson/quiz/submit/", LessonQuizSubmitView.as_view(), name="lesson-quiz-submit"),
     path("prompts/", PromptsListView.as_view(), name="prompts"),
     path("admin/prompts/", AdminPromptsListView.as_view(), name="admin-prompts"),
     path(
@@ -139,6 +144,7 @@ urlpatterns = [
     ),
     path("transcribe/", TranscribeView.as_view(), name="transcribe"),
     path("speaking/attempt-audio/", SpeakingAttemptAudioView.as_view(), name="speaking-attempt-audio"),
+    path("shadowing/items/from-sentences/", ShadowingFromSentencesView.as_view(), name="shadowing-from-sentences"),
     path("shadowing/items/", ShadowingItemsListView.as_view(), name="shadowing-items"),
     path(
         "shadowing/items/<int:item_id>/attempt/",

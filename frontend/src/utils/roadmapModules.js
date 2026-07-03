@@ -42,4 +42,16 @@ export function neighborLessons(topics, currentTopic) {
   }
 }
 
+/** Next lesson in order that is not locked (skips locked Stage 2 items). */
+export function nextUnlockedLesson(topics, completedTopic) {
+  const sorted = [...(topics || [])].sort((a, b) => a.order - b.order)
+  const startIndex = completedTopic
+    ? sorted.findIndex((t) => t.id === completedTopic.id)
+    : -1
+  for (let i = startIndex + 1; i < sorted.length; i += 1) {
+    if (!sorted[i].locked) return sorted[i]
+  }
+  return null
+}
+
 export { STATUS_LABELS }

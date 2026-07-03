@@ -1,24 +1,34 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import CollapsibleNativeNote from '../components/CollapsibleNativeNote'
 import DeveloperProviderSelect from '../components/DeveloperProviderSelect'
 import ListeningGeneratePracticeTab from '../components/ListeningGeneratePracticeTab'
 import ListeningQuizTab from '../components/ListeningQuizTab'
+import ListeningSummaryStrip from '../components/ListeningSummaryStrip'
 import { useDeveloperMode } from '../hooks/useDeveloperMode'
 import { apiRequest, getPrompts, postForm } from '../api/client'
 import { DEFAULT_AI_PROVIDER, DEFAULT_STT_PROVIDER, pickDefaultProvider } from '../utils/defaultProvider'
 
-const MODES = [
-  { id: 'generate', label: 'Generate practice' },
-  { id: 'quiz', label: 'Listening quiz' },
-  { id: 'analyze', label: 'Analyze transcript' },
+const TABS = [
+  { id: 'generate', label: 'Generate Practice' },
+  { id: 'quiz', label: 'Listening Quiz' },
+  { id: 'analyze', label: 'Analyze Transcript' },
 ]
+
+const VALID_TABS = new Set(TABS.map((entry) => entry.id))
+
+function resolveTab(rawTab) {
+  if (!rawTab || !VALID_TABS.has(rawTab)) {
+    return 'generate'
+  }
+  return rawTab
+}
 
 export default function Listening() {
   const devMode = useDeveloperMode()
   const [searchParams, setSearchParams] = useSearchParams()
-  const initialMode = searchParams.get('mode') || 'generate'
-  const [mode, setMode] = useState(MODES.some((entry) => entry.id === initialMode) ? initialMode : 'generate')
+  const initialTab = resolveTab(searchParams.get('tab') || searchParams.get('mode'))
+  const [tab, setTab] = useState(initialTab)
   const [transcript, setTranscript] = useState('')
   const [analysis, setAnalysis] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -28,6 +38,12 @@ export default function Listening() {
   const [prompts, setPrompts] = useState([])
   const [addedWords, setAddedWords] = useState({})
   const [audioFile, setAudioFile] = useState(null)
+  const [summaryRefresh, setSummaryRefresh] = useState(0)
+  const [summaryMeta, setSummaryMeta] = useState({
+    currentLesson: '—',
+    level: 'B1',
+    listeningType: 'academic_mini_lecture',
+  })
   const fileInputRef = useRef(null)
 
   const isListeningTaskType = (prompt) =>
@@ -48,21 +64,37 @@ export default function Listening() {
   }, [])
 
   useEffect(() => {
-    const paramMode = searchParams.get('mode')
-    if (paramMode && MODES.some((entry) => entry.id === paramMode)) {
-      setMode(paramMode)
-    }
-  }, [searchParams])
+    const rawTab = searchParams.get('tab') || searchParams.get('mode')
+    const resolved = resolveTab(rawTab)
 
-  function handleModeChange(nextMode) {
-    setMode(nextMode)
+    if (rawTab !== resolved) {
+      const nextParams = new URLSearchParams(searchParams)
+      nextParams.set('tab', resolved)
+      nextParams.delete('mode')
+      setSearchParams(nextParams, { replace: true })
+    }
+
+    setTab(resolved)
+  }, [searchParams, setSearchParams])
+
+  const handleSessionChange = useCallback((_session, meta) => {
+    setSummaryMeta({
+      currentLesson: meta?.contextNote || '—',
+      level: meta?.level || 'B1',
+      listeningType: meta?.listeningType || 'academic_mini_lecture',
+    })
+  }, [])
+
+  function handleTabChange(nextTab) {
+    setTab(nextTab)
     setError('')
     const nextParams = new URLSearchParams(searchParams)
-    nextParams.set('mode', nextMode)
+    nextParams.set('tab', nextTab)
+    nextParams.delete('mode')
     setSearchParams(nextParams, { replace: true })
   }
 
-  async function handleGenerate(event) {
+  async function handleAnalyze(event) {
     event.preventDefault()
     const text = transcript.trim()
     if ((!text && !audioFile) || loading) return
@@ -92,7 +124,7 @@ export default function Listening() {
       }
       setAnalysis(data.analysis)
     } catch (err) {
-      setError(err.message || 'Something went wrong')
+      setError(err.message || 'Could not analyze this transcript. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -126,20 +158,23 @@ export default function Listening() {
   }
 
   return (
-    <div className="reading-page">
+    <div className="listening-page listening-page-compact">
       <h1>Listening Coach</h1>
-      <p className="page-lead">
-        Generate original listening practice for your level and goal, take a listening quiz with a
-        hidden transcript, or analyze your own transcript.
-      </p>
 
-      <div className="tabs">
-        {MODES.map((entry) => (
+      <ListeningSummaryStrip
+        refreshKey={summaryRefresh}
+        currentLesson={summaryMeta.currentLesson}
+        level={summaryMeta.level}
+        listeningType={summaryMeta.listeningType}
+      />
+
+      <div className="tabs listening-tabs">
+        {TABS.map((entry) => (
           <button
             key={entry.id}
             type="button"
-            className={mode === entry.id ? 'tab tab-active' : 'tab'}
-            onClick={() => handleModeChange(entry.id)}
+            className={tab === entry.id ? 'tab tab-active' : 'tab'}
+            onClick={() => handleTabChange(entry.id)}
           >
             {entry.label}
           </button>
@@ -149,14 +184,14 @@ export default function Listening() {
       {devMode && (
         <div className="selectors">
           <DeveloperProviderSelect
-            label="AI provider"
+            label="AI provider (dev)"
             value={provider}
             options={[...new Set(prompts.map((prompt) => prompt.provider))]}
             onChange={setProvider}
             disabled={loading}
           />
           <DeveloperProviderSelect
-            label="STT provider"
+            label="STT provider (dev)"
             value={transcriptionProvider}
             options={['openai_whisper', 'local_whisper']}
             onChange={setTranscriptionProvider}
@@ -165,20 +200,23 @@ export default function Listening() {
         </div>
       )}
 
-      {error && <p className="error">{error}</p>}
+      {error && <p className="error listening-error">{error}</p>}
 
-      {mode === 'generate' && (
+      {tab === 'generate' && (
         <ListeningGeneratePracticeTab
-          provider={provider}
+          provider={devMode ? provider : undefined}
           loading={loading}
           setLoading={setLoading}
           setError={setError}
+          onSessionChange={handleSessionChange}
+          onProgressSaved={() => setSummaryRefresh((value) => value + 1)}
+          tabVariant="generate"
         />
       )}
 
-      {mode === 'quiz' && (
+      {tab === 'quiz' && (
         <ListeningQuizTab
-          provider={provider}
+          provider={devMode ? provider : undefined}
           transcriptionProvider={transcriptionProvider}
           loading={loading}
           setLoading={setLoading}
@@ -186,66 +224,68 @@ export default function Listening() {
         />
       )}
 
-      {mode === 'analyze' && (
-        <>
-          <div className="audio-upload">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="audio/*"
-              onChange={handleFileChange}
-              disabled={loading}
-              style={{ display: 'none' }}
-            />
-            <button
-              type="button"
-              className="secondary"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={loading}
-            >
-              {audioFile ? `Selected: ${audioFile.name}` : 'Upload audio file'}
-            </button>
-            {audioFile && (
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => {
-                  setAudioFile(null)
-                  if (fileInputRef.current) fileInputRef.current.value = ''
+      {tab === 'analyze' && (
+        <div className="listening-analyze-panel">
+          {!analysis ? (
+            <form onSubmit={handleAnalyze} className="card card-compact">
+              <p className="muted listening-helper">
+                Paste a transcript or upload audio to get vocabulary, comprehension prompts, and shadowing sentences.
+              </p>
+              <div className="audio-upload">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="audio/*"
+                  onChange={handleFileChange}
+                  disabled={loading}
+                  style={{ display: 'none' }}
+                />
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={loading}
+                >
+                  {audioFile ? `Selected: ${audioFile.name}` : 'Upload audio file'}
+                </button>
+                {audioFile && (
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => {
+                      setAudioFile(null)
+                      if (fileInputRef.current) fileInputRef.current.value = ''
+                    }}
+                    disabled={loading}
+                  >
+                    Clear audio
+                  </button>
+                )}
+              </div>
+              <textarea
+                value={transcript}
+                onChange={(e) => {
+                  setTranscript(e.target.value)
+                  if (e.target.value) setAudioFile(null)
                 }}
-                disabled={loading}
-              >
-                Clear audio
+                placeholder="Paste a transcript here, or upload audio above..."
+                rows={10}
+                disabled={loading || !!audioFile}
+              />
+              <button type="submit" disabled={loading || (!transcript.trim() && !audioFile)}>
+                {loading ? 'Analyzing…' : 'Analyze transcript'}
               </button>
-            )}
-          </div>
-
-          <form onSubmit={handleGenerate}>
-            <textarea
-              value={transcript}
-              onChange={(e) => {
-                setTranscript(e.target.value)
-                if (e.target.value) setAudioFile(null)
-              }}
-              placeholder="Paste a transcript here, or upload audio above..."
-              rows={12}
-              disabled={loading || !!audioFile}
-            />
-            <button type="submit" disabled={loading || (!transcript.trim() && !audioFile)}>
-              {loading ? 'Generating...' : 'Analyze'}
-            </button>
-          </form>
-
-          {analysis && (
+            </form>
+          ) : (
             <div className="reading-results">
               {analysis.intro && (
-                <section className="reading-section">
+                <section className="reading-section card">
                   <h2>Coach notes</h2>
                   <p>{analysis.intro}</p>
                 </section>
               )}
 
-              <section className="reading-section">
+              <section className="reading-section card">
                 <h2>Comprehension quiz</h2>
                 <ol>
                   {analysis.comprehension_questions.map((item, index) => (
@@ -259,7 +299,7 @@ export default function Listening() {
                 </ol>
               </section>
 
-              <section className="reading-section">
+              <section className="reading-section card">
                 <h2>Vocabulary</h2>
                 <div className="vocab-list">
                   {analysis.vocabulary.map((entry) => (
@@ -282,7 +322,7 @@ export default function Listening() {
                 </div>
               </section>
 
-              <section className="reading-section">
+              <section className="reading-section card">
                 <h2>Shadowing sentences</h2>
                 <ol>
                   {analysis.shadowing_sentences.map((sentence) => (
@@ -291,18 +331,12 @@ export default function Listening() {
                 </ol>
               </section>
 
-              <section className="reading-section">
-                <h2>Key phrases</h2>
-                {analysis.key_phrases.map((item) => (
-                  <article key={item.phrase} className="grammar-point">
-                    <p><strong>{item.phrase}</strong> — {item.meaning}</p>
-                    <CollapsibleNativeNote note={item.persian} />
-                  </article>
-                ))}
-              </section>
+              <button type="button" className="btn btn-secondary" onClick={() => setAnalysis(null)}>
+                Analyze another transcript
+              </button>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   )

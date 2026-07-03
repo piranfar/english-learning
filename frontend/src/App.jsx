@@ -5,12 +5,11 @@ import PromptsRedirect from './components/PromptsRedirect'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import ProtectedRoute from './auth/ProtectedRoute'
 import StaffRoute from './auth/StaffRoute'
-import Dashboard from './pages/Dashboard'
-import Readiness from './pages/Readiness'
+import Today from './pages/Today'
+import Progress from './pages/Progress'
 import Lesson from './pages/Lesson'
 import Login from './pages/Login'
 import Mistakes from './pages/Mistakes'
-import Plan from './pages/Plan'
 import Roadmap from './pages/Roadmap'
 import Profile from './pages/Profile'
 import Reading from './pages/Reading'
@@ -34,13 +33,15 @@ function AppRoutes() {
     <Routes>
       <Route
         path="/"
-        element={<Navigate to={authenticated ? '/dashboard' : '/login'} replace />}
+        element={<Navigate to={authenticated ? '/today' : '/login'} replace />}
       />
       <Route path="/login" element={<Login />} />
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/readiness" element={<ProtectedRoute><Readiness /></ProtectedRoute>} />
+      <Route path="/today" element={<ProtectedRoute><Today /></ProtectedRoute>} />
+      <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<Navigate to="/today" replace />} />
+      <Route path="/plan" element={<Navigate to="/today" replace />} />
+      <Route path="/readiness" element={<Navigate to="/progress" replace />} />
       <Route path="/lesson" element={<ProtectedRoute><Lesson /></ProtectedRoute>} />
-      <Route path="/plan" element={<ProtectedRoute><Plan /></ProtectedRoute>} />
       <Route path="/roadmap" element={<ProtectedRoute><Roadmap /></ProtectedRoute>} />
       <Route path="/speaking" element={<ProtectedRoute><Speaking /></ProtectedRoute>} />
       <Route path="/shadowing" element={<ProtectedRoute><Shadowing /></ProtectedRoute>} />

@@ -14,7 +14,7 @@ export default function AdminLayout() {
           <p className="muted">Developer and staff tools — not shown to learners.</p>
         </div>
         <div className="btn-group">
-          <Link to="/dashboard" className="btn btn-secondary btn-sm">
+          <Link to="/today" className="btn btn-secondary btn-sm">
             Back to app
           </Link>
           <a

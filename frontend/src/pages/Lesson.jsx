@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
-  completeLesson,
   getLessonRecommendation,
   getLessonTopics,
   startRecommendedLesson,
 } from '../api/client'
 import Chat from '../components/Chat'
+import LessonQuizPanel from '../components/LessonQuizPanel'
 import ProgressBar from '../components/ProgressBar'
 import { useLearningSession } from '../hooks/useLearningSession'
 import { courseIdFromTopic } from '../utils/courseProgress'
@@ -15,10 +15,11 @@ import {
   findCurrentModule,
   moduleProgress,
   neighborLessons,
+  nextUnlockedLesson,
   topicsForModule,
 } from '../utils/roadmapModules'
 import { findCurrentLesson } from '../utils/roadmapStatus'
-import { formatLastActivity } from '../services/learningSessionStorage'
+import { formatLastActivity, sessionIdForTopic, clearCurrentSession } from '../services/learningSessionStorage'
 
 function learningObjectives(topic) {
   if (!topic) return []
@@ -41,9 +42,10 @@ export default function Lesson() {
   const [stages, setStages] = useState([])
   const [loading, setLoading] = useState(true)
   const [starting, setStarting] = useState(false)
-  const [completing, setCompleting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [nextLessonAfterComplete, setNextLessonAfterComplete] = useState(null)
+  const [showCompletionGuide, setShowCompletionGuide] = useState(false)
 
   const [currentTopicId, setCurrentTopicId] = useState(null)
   const [currentTopicTitle, setCurrentTopicTitle] = useState('')
@@ -55,6 +57,7 @@ export default function Lesson() {
   const [provider, setProvider] = useState(DEFAULT_AI_PROVIDER)
 
   const restoredRef = useRef(false)
+  const saveTimerRef = useRef(null)
 
   const {
     hydrated,
@@ -94,20 +97,28 @@ export default function Lesson() {
     if (!hydrated || !restoredRef.current) return
     if (messages.length === 0 && !currentTopicId && !sessionId) return
 
-    const topic = topics.find((t) => t.id === currentTopicId)
-    persistSession({
-      pageKey: 'lesson',
-      backendSessionId: sessionId,
-      track: 'grammar_coach',
-      provider,
-      topicId: currentTopicId,
-      title: currentTopicTitle || topic?.title || '',
-      courseId: courseIdFromTopic(
-        topic || { id: currentTopicId, title: currentTopicTitle },
-      ),
-      courseTitle: currentTopicTitle || topic?.title || '',
-      messages,
-    })
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = setTimeout(() => {
+      const topic = topics.find((t) => t.id === currentTopicId)
+      persistSession({
+        id: currentTopicId ? sessionIdForTopic(currentTopicId) : savedSession?.id,
+        pageKey: 'lesson',
+        backendSessionId: sessionId,
+        track: 'grammar_coach',
+        provider,
+        topicId: currentTopicId,
+        title: currentTopicTitle || topic?.title || '',
+        courseId: courseIdFromTopic(
+          topic || { id: currentTopicId, title: currentTopicTitle },
+        ),
+        courseTitle: currentTopicTitle || topic?.title || '',
+        messages,
+      })
+    }, 400)
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    }
   }, [
     hydrated,
     sessionId,
@@ -117,6 +128,7 @@ export default function Lesson() {
     messages,
     topics,
     persistSession,
+    savedSession?.id,
   ])
 
   const loadLessonData = useCallback(async () => {
@@ -206,12 +218,15 @@ export default function Lesson() {
     setStarting(true)
     setError('')
     setSuccess('')
+    setNextLessonAfterComplete(null)
+    setShowCompletionGuide(false)
     setShowWelcomeBack(false)
     try {
-      const data = await startRecommendedLesson(Number(topicId), providerName)
-      const topic = data.topic || recommendation?.recommended_topic
+      const topicIdNum = Number(topicId)
+      const data = await startRecommendedLesson(topicIdNum, providerName)
+      const topic = data.topic || topics.find((t) => t.id === topicIdNum) || recommendation?.recommended_topic
       const title = topic?.title || ''
-      setCurrentTopicId(topic?.id || Number(topicId))
+      setCurrentTopicId(topic?.id || topicIdNum)
       setCurrentTopicTitle(title)
       setSessionId(data.session_id)
       setProvider(providerName)
@@ -226,11 +241,11 @@ export default function Lesson() {
       setChatResetKey((key) => key + 1)
       setSuccess(`Started: ${title || 'lesson'}`)
       persistSession({
-        id: savedSession?.id,
+        id: sessionIdForTopic(topic?.id || topicIdNum),
         backendSessionId: data.session_id,
         track: 'grammar_coach',
         provider: providerName,
-        topicId: topic?.id || Number(topicId),
+        topicId: topic?.id || topicIdNum,
         title,
         courseId: courseIdFromTopic(topic || { id: topicId, title }),
         courseTitle: title,
@@ -250,24 +265,55 @@ export default function Lesson() {
     await handleStartTopic(topicId, provider)
   }
 
-  async function handleCompleteLesson(score = 80) {
-    if (!currentTopicId || completing) return
+  async function handleQuizCompleted(data) {
+    const percent = data?.score?.percent ?? 0
+    const completedTopicId = currentTopicId
+    const completedTopic =
+      topics.find((t) => t.id === completedTopicId) ||
+      (completedTopicId
+        ? { id: completedTopicId, title: currentTopicTitle, order: 0, locked: false }
+        : null)
 
-    setCompleting(true)
-    setError('')
-    setSuccess('')
-    try {
-      await completeLesson(currentTopicId, score, '')
-      setSuccess(`Lesson marked complete (score ${score}).`)
-      markCompleted()
+    if (data?.progress?.status === 'completed') {
+      setSuccess(`Lesson completed with quiz score ${percent}%.`)
+      if (completedTopicId) {
+        persistSession({
+          id: sessionIdForTopic(completedTopicId),
+          topicId: completedTopicId,
+          title: currentTopicTitle,
+          courseId: courseIdFromTopic(completedTopic || { id: completedTopicId, title: currentTopicTitle }),
+          progress: {
+            ...(savedSession?.progress || {}),
+            status: 'completed',
+          },
+        })
+      } else {
+        markCompleted()
+      }
+      clearCurrentSession()
+      const next = completedTopic
+        ? nextUnlockedLesson(stage1Topics, completedTopic)
+        : null
+      setNextLessonAfterComplete(next)
+      setShowCompletionGuide(true)
       setCurrentTopicId(null)
       setCurrentTopicTitle('')
+      setSessionId(null)
+      setMessages([])
+      setChatResetKey((key) => key + 1)
       await loadLessonData()
-    } catch (err) {
-      setError(err.message || 'Failed to complete lesson')
-    } finally {
-      setCompleting(false)
+    } else {
+      setSuccess('')
+      setError(`Quiz score ${percent}% — review the lesson and try again (70% needed).`)
     }
+  }
+
+  async function handleStartNextLesson() {
+    const next = nextLessonAfterComplete
+    if (!next?.id) return
+    setNextLessonAfterComplete(null)
+    setShowCompletionGuide(false)
+    await handleStartTopic(String(next.id), provider)
   }
 
   function handleContinuePrevious() {
@@ -295,10 +341,10 @@ export default function Lesson() {
 
   const recommended = recommendation?.recommended_topic
   const objectives = learningObjectives(recommended)
-  const lastStudied = savedSession?.updatedAt
-    ? formatLastActivity(savedSession.updatedAt)
-    : recentSessions[0]?.updatedAt
-      ? formatLastActivity(recentSessions[0].updatedAt)
+  const lastStudied = savedSession?.lastUpdatedAt
+    ? formatLastActivity(savedSession.lastUpdatedAt)
+    : recentSessions[0]?.lastUpdatedAt
+      ? formatLastActivity(recentSessions[0].lastUpdatedAt)
       : 'Not yet'
 
   return (
@@ -310,7 +356,57 @@ export default function Lesson() {
       {error && <p className="error">{error}</p>}
       {success && <p className="success-msg">{success}</p>}
 
-      {hasSavedSession && (
+      {showCompletionGuide && (
+        <section className="card lesson-next-card">
+          <p className="dashboard-focus-kicker">Lesson complete</p>
+          <h2 className="lesson-section-title">Continue your path</h2>
+          {nextLessonAfterComplete ? (
+            <>
+              <p className="muted">
+                Great work finishing this topic. Your next lesson is ready.
+              </p>
+              <p className="lesson-next-title">
+                <strong>{nextLessonAfterComplete.title}</strong>
+              </p>
+              <div className="lesson-next-actions">
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={handleStartNextLesson}
+                  disabled={starting}
+                >
+                  {starting ? 'Starting…' : 'Start next lesson'}
+                </button>
+                <Link
+                  to={`/lesson?topic=${nextLessonAfterComplete.slug}`}
+                  className="btn btn-sm btn-secondary"
+                >
+                  View topic
+                </Link>
+                <Link to="/roadmap" className="btn btn-sm btn-secondary">
+                  Open roadmap
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="muted">
+                You finished this topic. No further unlocked lessons in this stage — check the roadmap or Today for your next focus.
+              </p>
+              <div className="lesson-next-actions">
+                <Link to="/today" className="btn btn-sm">
+                  Go to Today
+                </Link>
+                <Link to="/roadmap" className="btn btn-sm btn-secondary">
+                  Open roadmap
+                </Link>
+              </div>
+            </>
+          )}
+        </section>
+      )}
+
+      {hasSavedSession && !showCompletionGuide && (
         <section className="lesson-session-row card card-compact">
           <div className="lesson-session-meta">
             <span><strong>Track:</strong> Grammar coach</span>
@@ -466,14 +562,6 @@ export default function Lesson() {
             <p>
               Active: <strong>{currentTopicTitle}</strong>
             </p>
-            <button
-              type="button"
-              className="btn btn-sm btn-secondary"
-              onClick={() => handleCompleteLesson(80)}
-              disabled={completing}
-            >
-              {completing ? 'Saving…' : 'Complete lesson'}
-            </button>
           </div>
         )}
         <Chat
@@ -487,6 +575,12 @@ export default function Lesson() {
           onProviderChange={setProvider}
         />
       </section>
+
+      <LessonQuizPanel
+        topicId={currentTopicId}
+        topicTitle={currentTopicTitle}
+        onCompleted={handleQuizCompleted}
+      />
     </div>
   )
 }

@@ -201,7 +201,7 @@ class DashboardCoachFocusTests(TestCase):
         )
         focus = self._focus()
         self.assertEqual(focus["focus_action"]["title"], "Generate today's study plan")
-        self.assertEqual(focus["focus_action"]["route"], "/plan")
+        self.assertEqual(focus["focus_action"]["route"], "/today")
 
     def test_preposition_focus_route(self):
         Mistake.objects.create(

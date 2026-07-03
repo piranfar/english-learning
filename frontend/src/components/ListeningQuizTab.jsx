@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import ExamTextArea from './ExamTextArea'
-import { apiRequest, postForm } from '../api/client'
+import { apiRequest, createShadowingFromSentences, postForm } from '../api/client'
+import { sendSentencesToShadowing } from '../services/listeningShadowing'
 
 const LEVELS = [
   { value: 'B1', label: 'B1' },
@@ -37,6 +38,8 @@ export default function ListeningQuizTab({
   const [quiz, setQuiz] = useState(null)
   const [answers, setAnswers] = useState({})
   const [result, setResult] = useState(null)
+  const [shadowingLoading, setShadowingLoading] = useState(false)
+  const navigate = useNavigate()
   const fileInputRef = useRef(null)
 
   const audioUrl = useMemo(() => {
@@ -141,6 +144,23 @@ export default function ListeningQuizTab({
     setResult(null)
     setNotes('')
     setError('')
+  }
+
+  async function handleSendToShadowing() {
+    if (!result?.shadowing_sentences?.length || shadowingLoading) return
+    setShadowingLoading(true)
+    setError('')
+    try {
+      await sendSentencesToShadowing(
+        result.shadowing_sentences,
+        navigate,
+        createShadowingFromSentences,
+      )
+    } catch (err) {
+      setError(err.message || 'Could not open Shadowing practice')
+    } finally {
+      setShadowingLoading(false)
+    }
   }
 
   const allAnswered = quiz?.questions?.every((question) => answers[question.id] !== undefined)
@@ -335,10 +355,10 @@ export default function ListeningQuizTab({
                   <button
                     type="button"
                     className="btn btn-secondary btn-sm"
-                    disabled
-                    title="TODO: Send selected sentences to Shadowing practice."
+                    onClick={handleSendToShadowing}
+                    disabled={shadowingLoading}
                   >
-                    Send difficult sentences to Shadowing
+                    {shadowingLoading ? 'Opening Shadowing…' : 'Send difficult sentences to Shadowing'}
                   </button>
                 </section>
               )}

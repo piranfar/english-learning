@@ -8,7 +8,6 @@ from typing import Any
 
 from django.conf import settings
 
-from tutor.ai.provider_resolution import is_ai_provider_configured
 from tutor.ai_providers.openai_provider import OpenAIReadingProvider
 from tutor.reading_practice import (
     build_reading_generate_user_message,
@@ -16,6 +15,7 @@ from tutor.reading_practice import (
     parse_reading_json_payload,
     resolve_lesson_focus,
 )
+from tutor.task_provider import resolve_reading_provider
 
 READING_SYSTEM_PROMPT = """You are an expert English reading test designer and TOEFL reading coach.
 
@@ -72,20 +72,6 @@ READING_NOT_CONFIGURED_MSG = (
 
 class ReadingNotConfiguredError(Exception):
     pass
-
-
-def resolve_reading_provider(requested: str | None = None) -> str | None:
-    """OpenAI-first provider resolution for reading; never requires Anthropic."""
-    if requested:
-        cleaned = str(requested).lower().strip()
-        if is_ai_provider_configured(cleaned):
-            return cleaned
-
-    preferred = getattr(settings, "READING_AI_PROVIDER", "openai").lower().strip()
-    for candidate in (preferred, "openai", "ollama"):
-        if candidate and is_ai_provider_configured(candidate):
-            return candidate
-    return None
 
 
 def resolve_reading_model(reading_mode: str, provider: str) -> str:

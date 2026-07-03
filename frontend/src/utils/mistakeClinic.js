@@ -1,3 +1,43 @@
+export const GRAMMAR_CATEGORIES = new Set([
+  'article',
+  'preposition',
+  'tense',
+  'subject_verb_agreement',
+  'word_order',
+  'fragment',
+  'run_on_sentence',
+  'collocation',
+  'direct_translation',
+])
+
+export const WRITING_CATEGORIES = new Set([
+  'spelling',
+  'sentence_structure',
+  'academic_tone',
+  'fragment',
+  'run_on_sentence',
+])
+
+export const VOCAB_CATEGORIES = new Set(['vocabulary_precision'])
+
+export const SPEAKING_CATEGORIES = new Set(['speaking_organization', 'pronunciation_fluency'])
+
+export const READING_CATEGORIES = new Set(['reading_comprehension'])
+
+export const LISTENING_CATEGORIES = new Set(['listening_comprehension'])
+
+export const CATEGORY_LESSON_TOPICS = {
+  article: 'articles-a-an-the',
+  preposition: 'prepositions-of-time-and-place',
+  tense: 'present-perfect',
+  subject_verb_agreement: 'common-persian-speaker-grammar-mistakes',
+  word_order: 'common-persian-speaker-grammar-mistakes',
+  fragment: 'relative-clauses',
+  run_on_sentence: 'relative-clauses',
+  collocation: 'common-persian-speaker-grammar-mistakes',
+  direct_translation: 'common-persian-speaker-grammar-mistakes',
+}
+
 export const TRACK_LABELS = {
   writing_edit_coach: 'Writing correction',
   grammar_coach: 'Grammar',
@@ -128,15 +168,37 @@ export function groupMistakesByCategory(mistakes) {
   }))
 }
 
-export function canPracticeCategory(category) {
-  return category === 'vocabulary_precision'
-}
-
 export function practiceRouteForCategory(category) {
-  if (category === 'vocabulary_precision') {
+  if (VOCAB_CATEGORIES.has(category)) {
     return '/vocab?mode=review_mistakes'
   }
-  return null
+  if (WRITING_CATEGORIES.has(category)) {
+    return '/writing?tab=editing'
+  }
+  if (SPEAKING_CATEGORIES.has(category)) {
+    return '/speaking'
+  }
+  if (READING_CATEGORIES.has(category)) {
+    return '/reading?tab=generate'
+  }
+  if (LISTENING_CATEGORIES.has(category)) {
+    return '/listening?tab=generate'
+  }
+
+  const topic = CATEGORY_LESSON_TOPICS[category]
+  if (topic) {
+    return `/lesson?topic=${topic}`
+  }
+
+  if (GRAMMAR_CATEGORIES.has(category)) {
+    return '/lesson'
+  }
+
+  return '/lesson'
+}
+
+export function canPracticeCategory(category) {
+  return Boolean(practiceRouteForCategory(category))
 }
 
 export function formatMistakeDate(value) {

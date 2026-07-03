@@ -759,6 +759,14 @@ def score_reading_session(user, session_id: int, answers: dict) -> dict:
             f"Most misses were {top['type'].replace('_', ' ')} questions ({top['count']})."
         )
 
+    from tutor.plan_completion import auto_complete_plan_items
+
+    plan_items_completed = auto_complete_plan_items(
+        user,
+        track="reading",
+        metadata={"lesson_focus": session.lesson_focus},
+    )
+
     return {
         "score": {
             "correct": correct_count,
@@ -772,6 +780,7 @@ def score_reading_session(user, session_id: int, answers: dict) -> dict:
         "mistake_pattern": mistake_pattern,
         "next_drill": next_drill,
         "practice_toefl_estimate": practice_estimate,
+        "plan_items_completed": plan_items_completed,
     }
 
 
@@ -865,7 +874,7 @@ def _reading_plan_item(
         "title": title,
         "skill": "Reading",
         "reason": reason,
-        "route": f"/reading?mode=generate&{query}",
+        "route": f"/reading?tab=generate&{query}",
         "minutes": 15,
         "completed": False,
         "status": "not_started",

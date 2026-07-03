@@ -908,6 +908,17 @@ def score_listening_session(user, session_id: int, answers: dict) -> dict:
         {"type": question_type, "count": count} for question_type, count in weak_types.most_common()
     ]
 
+    from tutor.plan_completion import auto_complete_plan_items
+
+    plan_items_completed = auto_complete_plan_items(
+        user,
+        track="listening",
+        metadata={
+            "listening_type": session.listening_type,
+            "lesson_focus": session.lesson_focus,
+        },
+    )
+
     return {
         "score": {"correct": correct_count, "total": total, "percent": percent},
         "results": results,
@@ -915,6 +926,7 @@ def score_listening_session(user, session_id: int, answers: dict) -> dict:
         "weak_question_types": weak_question_types,
         "transcript": session.transcript,
         "shadowing_sentences": session.shadowing_sentences,
+        "plan_items_completed": plan_items_completed,
     }
 
 
@@ -940,7 +952,7 @@ def _listening_plan_item(
         "title": title,
         "skill": "Listening",
         "reason": reason,
-        "route": f"/listening?mode=generate&{query}",
+        "route": f"/listening?tab=generate&{query}",
         "minutes": 15,
         "completed": False,
         "status": "not_started",

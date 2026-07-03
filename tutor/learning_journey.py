@@ -315,14 +315,13 @@ def recent_grammar_mistake_count(user, days: int = 7) -> int:
     return count
 
 
-def _placeholder_skill_score(user, skill: str, stage_slug: str) -> int:
-    """Skill score proxy; uses persisted reading session scores when available."""
-    if skill == "reading":
-        from tutor.reading_practice import reading_score_for_user
+def _skill_score(user, skill: str, stage_slug: str) -> tuple[int, str]:
+    """Return skill score and a short detail label (real data vs estimate)."""
+    from tutor.coach_scores import coach_score_for_user
 
-        stored = reading_score_for_user(user, stage_slug)
-        if stored:
-            return stored
+    stored = coach_score_for_user(user, skill, stage_slug)
+    if stored:
+        return stored, "recent practice"
 
     progress = goal_progress_percent(user, stage_slug)
     base = 45 + progress // 2
@@ -333,7 +332,13 @@ def _placeholder_skill_score(user, skill: str, stage_slug: str) -> int:
         "speaking": -2,
         "writing": 2,
     }
-    return min(95, max(40, base + offsets.get(skill, 0)))
+    estimate = min(95, max(40, base + offsets.get(skill, 0)))
+    return estimate, "estimate from lesson progress"
+
+
+def _placeholder_skill_score(user, skill: str, stage_slug: str) -> int:
+    score, _ = _skill_score(user, skill, stage_slug)
+    return score
 
 
 def _stage1_readiness_criteria(user) -> list[ReadinessCriterion]:
@@ -344,20 +349,20 @@ def _stage1_readiness_criteria(user) -> list[ReadinessCriterion]:
     grammar_mistakes = recent_grammar_mistake_count(user)
 
     grammar_score = max(0, 100 - grammar_mistakes * 8)
-    vocab_score = _placeholder_skill_score(user, "vocabulary", stage_slug)
-    reading_score = _placeholder_skill_score(user, "reading", stage_slug)
-    listening_score = _placeholder_skill_score(user, "listening", stage_slug)
-    speaking_score = _placeholder_skill_score(user, "speaking", stage_slug)
-    writing_score = _placeholder_skill_score(user, "writing", stage_slug)
+    vocab_score, vocab_detail = _skill_score(user, "vocabulary", stage_slug)
+    reading_score, reading_detail = _skill_score(user, "reading", stage_slug)
+    listening_score, listening_detail = _skill_score(user, "listening", stage_slug)
+    speaking_score, speaking_detail = _skill_score(user, "speaking", stage_slug)
+    writing_score, writing_detail = _skill_score(user, "writing", stage_slug)
 
-    # TODO: Replace TOEFL estimate with aggregated AI scoring from writing/speaking feedback.
-    estimated_toefl = min(
-        95,
-        round(
-            55
-            + mastery_ratio * 20
-            + (grammar_score + reading_score + listening_score + speaking_score + writing_score) / 25
-        ),
+    # TOEFL total from recent coach scores when available.
+    from tutor.coach_scores import estimated_toefl_total
+
+    estimated_toefl, toefl_detail = estimated_toefl_total(
+        user,
+        stage_slug,
+        mastery_ratio=mastery_ratio,
+        grammar_score=grammar_score,
     )
 
     lessons_ready = mastery_ratio >= 0.75
@@ -381,35 +386,35 @@ def _stage1_readiness_criteria(user) -> list[ReadinessCriterion]:
             "Vocabulary readiness",
             vocab_score,
             vocab_score >= 70,
-            "Academic vocabulary progress for Stage 1.",
+            f"Academic vocabulary progress ({vocab_detail}).",
         ),
         ReadinessCriterion(
             "reading_readiness",
             "Reading readiness",
             reading_score,
             reading_ready,
-            "Reading quiz / comprehension readiness (placeholder estimate).",
+            f"Reading comprehension based on {reading_detail}.",
         ),
         ReadinessCriterion(
             "listening_readiness",
             "Listening readiness",
             listening_score,
             listening_ready,
-            "Listening quiz readiness (placeholder estimate).",
+            f"Listening practice based on {listening_detail}.",
         ),
         ReadinessCriterion(
             "speaking_readiness",
             "Speaking readiness",
             speaking_score,
             speaking_ready,
-            "Speaking score estimate (placeholder until audio scoring history exists).",
+            f"Speaking evaluation based on {speaking_detail}.",
         ),
         ReadinessCriterion(
             "writing_readiness",
             "Writing readiness",
             writing_score,
             writing_ready,
-            "Writing score estimate (placeholder until essay scoring history exists).",
+            f"Writing evaluation based on {writing_detail}.",
         ),
         ReadinessCriterion(
             "lessons_mastered",
@@ -423,7 +428,7 @@ def _stage1_readiness_criteria(user) -> list[ReadinessCriterion]:
             "Estimated TOEFL score",
             estimated_toefl,
             toefl_ready,
-            "Practice estimate toward TOEFL 80+ (not an official ETS score).",
+            f"{toefl_detail} (not an official ETS score).",
         ),
     ]
 
@@ -435,8 +440,14 @@ def _stage2_readiness_criteria(user) -> list[ReadinessCriterion]:
     mastery_ratio = mastered / total if total else 0
     progress = goal_progress_percent(user, stage_slug)
 
-    # TODO: Replace with mock-test and advanced AI scoring when available.
-    estimated_toefl = min(110, 85 + progress // 3)
+    from tutor.coach_scores import estimated_toefl_total
+
+    estimated_toefl, toefl_detail = estimated_toefl_total(
+        user,
+        stage_slug,
+        mastery_ratio=mastery_ratio,
+        grammar_score=70,
+    )
     writing_score = _placeholder_skill_score(user, "writing", stage_slug) + 5
     speaking_score = _placeholder_skill_score(user, "speaking", stage_slug) + 5
     vocab_score = _placeholder_skill_score(user, "vocabulary", stage_slug) + 8
@@ -448,7 +459,7 @@ def _stage2_readiness_criteria(user) -> list[ReadinessCriterion]:
             "TOEFL 100+ readiness",
             estimated_toefl,
             estimated_toefl >= 100,
-            "Advanced practice estimate toward TOEFL 100+.",
+            f"{toefl_detail} toward TOEFL 100+.",
         ),
         ReadinessCriterion(
             "academic_writing_strength",

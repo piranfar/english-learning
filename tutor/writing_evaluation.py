@@ -312,4 +312,7 @@ def run_writing_evaluation(
     else:
         result["writing_feedback"] = writing_feedback
 
+    from tutor.plan_completion import auto_complete_plan_items
+
+    result["plan_items_completed"] = auto_complete_plan_items(user, track="writing")
     return result

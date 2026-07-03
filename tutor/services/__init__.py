@@ -198,16 +198,19 @@ def save_mistakes(user, track: str, corrections: list[dict]) -> None:
 
 
 def get_prompt_template(task_type: str, provider: str | None = None) -> PromptTemplate:
-    queryset = PromptTemplate.objects.filter(task_type=task_type, is_active=True)
-    if provider:
-        queryset = queryset.filter(provider=provider)
-    template = queryset.first()
+    from tutor.task_provider import resolve_task_provider
+
+    effective_provider = resolve_task_provider(task_type, provider)
+    template = PromptTemplate.objects.filter(
+        task_type=task_type,
+        is_active=True,
+        provider=effective_provider,
+    ).first()
     if template is None:
-        if provider:
-            raise ValueError(
-                f"No active prompt for task '{task_type}' with provider '{provider}'"
-            )
-        raise ValueError(f"No active prompt for task '{task_type}'")
+        raise ValueError(
+            f"No active prompt for task '{task_type}' with provider '{effective_provider}'. "
+            "Enable the provider in Prompt management and select it under AI provider settings."
+        )
     return template
 
 
@@ -1116,6 +1119,17 @@ def format_speaking_message(scenario: str | None, message: str) -> str:
     return message
 
 
+def format_grammar_coach_message(user_message: str, *, is_follow_up: bool) -> str:
+    if not is_follow_up:
+        return user_message
+    return (
+        "[Follow-up during an ongoing grammar lesson. The full lesson was already taught. "
+        "Use MODE B: answer ONLY the student's question below. Do NOT repeat sections 1–6 "
+        "or re-dump the whole lesson.]\n\n"
+        f"Student: {user_message}"
+    )
+
+
 def format_speaking_evaluation_message(
     *,
     level: str,
@@ -1259,7 +1273,14 @@ def run_task(
         for message in session.messages.order_by("created_at")
         if message.role in ("user", "assistant")
     ]
-    content = format_speaking_message(scenario, user_message)
+    is_grammar_follow_up = task_type == "grammar_coach" and bool(history)
+    if task_type == "grammar_coach":
+        content = format_grammar_coach_message(
+            user_message,
+            is_follow_up=is_grammar_follow_up,
+        )
+    else:
+        content = format_speaking_message(scenario, user_message)
     messages = [*history, {"role": "user", "content": content}]
 
     raw_reply = call_provider(template, messages)

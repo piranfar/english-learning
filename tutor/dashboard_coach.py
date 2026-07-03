@@ -83,7 +83,7 @@ def route_for_focus_category(category: str) -> str:
     lesson_topic = CATEGORY_LESSON_TOPICS.get(category)
     if lesson_topic:
         return f"/lesson?topic={lesson_topic}"
-    return "/plan"
+    return "/today"
 
 
 def focus_action_title(category: str | None, *, vocab_due: int = 0) -> str:
@@ -157,7 +157,7 @@ def _serialize_plan_task(task: dict | None) -> dict | None:
         return None
     return {
         "title": task.get("title", ""),
-        "route": task.get("route", "/plan"),
+        "route": task.get("route", "/today"),
         "type": task.get("type"),
         "skill": task.get("skill"),
         "category": (task.get("metadata") or {}).get("category"),
@@ -197,7 +197,7 @@ def _build_focus_payload(
     why: str,
     category: str | None,
     vocab_due: int,
-    route_fallback: str = "/plan",
+    route_fallback: str = "/today",
 ) -> tuple[dict, dict]:
     today_focus = {
         "title": title,
@@ -321,14 +321,14 @@ def build_coach_focus(
             why="Reviewing due mistakes stops small errors from becoming habits.",
             category=None,
             vocab_due=0,
-            route_fallback="/plan" if plan_exists else "/mistakes",
+            route_fallback="/today" if plan_exists else "/mistakes",
         )
         focus_action["title"] = (
             f"Review {mistakes_due} due mistake{'s' if mistakes_due != 1 else ''}"
         )
         if not plan_exists:
             focus_action["title"] = "Generate today's study plan"
-            focus_action["route"] = "/plan"
+            focus_action["route"] = "/today"
         return _assemble_coach_focus(
             today_focus,
             focus_action,
@@ -364,13 +364,13 @@ def build_coach_focus(
             why="You marked this as a weak area — targeted practice will help most.",
             category=None,
             vocab_due=0,
-            route_fallback="/plan",
+            route_fallback="/today",
         )
         focus_action = {
             "title": (
                 "Generate today's study plan" if not plan_exists else f"Practice {weakness.lower()}"
             ),
-            "route": "/plan",
+            "route": "/today",
             "label": "Start focus task",
         }
         return _assemble_coach_focus(
@@ -416,7 +416,7 @@ def build_coach_focus(
         }
         focus_action = {
             "title": "Generate today's study plan",
-            "route": "/plan",
+            "route": "/today",
             "label": "Start focus task",
         }
         return _assemble_coach_focus(
@@ -436,11 +436,11 @@ def build_coach_focus(
         why=why,
         category=None,
         vocab_due=0,
-        route_fallback="/plan",
+        route_fallback="/today",
     )
     focus_action = {
         "title": "Work through today's plan tasks",
-        "route": "/plan",
+        "route": "/today",
         "label": "Start focus task",
     }
     return _assemble_coach_focus(
@@ -469,13 +469,13 @@ def _assemble_coach_focus(
         if focus_action.get("route", "").startswith("/vocab"):
             focus_action = {
                 "title": focus_action_title(focus_category, vocab_due=0),
-                "route": route_for_focus_category(focus_category) if focus_category else "/plan",
+                "route": route_for_focus_category(focus_category) if focus_category else "/today",
                 "label": "Start focus task",
             }
         if "vocabulary" in focus_action.get("title", "").lower() and "due" in focus_action.get("title", "").lower():
             focus_action = {
                 "title": focus_action_title(focus_category, vocab_due=0),
-                "route": route_for_focus_category(focus_category) if focus_category else "/plan",
+                "route": route_for_focus_category(focus_category) if focus_category else "/today",
                 "label": "Start focus task",
             }
 

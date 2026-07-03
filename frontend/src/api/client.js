@@ -333,6 +333,17 @@ export async function completeLesson(topicId, score = 80, notes = '') {
   })
 }
 
+export function getLessonQuiz(topicId) {
+  return apiRequest(`/lesson/quiz/?topic_id=${topicId}`)
+}
+
+export async function submitLessonQuiz(topicId, answers) {
+  return apiRequest('/lesson/quiz/submit/', {
+    method: 'POST',
+    json: { topic_id: topicId, answers },
+  })
+}
+
 function appendAudioToForm(form, audioBlob, fieldName = 'audio') {
   const filename =
     audioBlob instanceof File
@@ -397,6 +408,13 @@ export async function submitShadowingText(itemId, transcript) {
   return apiRequest(`/shadowing/items/${itemId}/attempt/`, {
     method: 'POST',
     json: { transcript },
+  })
+}
+
+export async function createShadowingFromSentences(sentences) {
+  return apiRequest('/shadowing/items/from-sentences/', {
+    method: 'POST',
+    json: { sentences },
   })
 }
 

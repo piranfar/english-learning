@@ -1,38 +1,44 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getDashboard, getLessonTopics, getReadiness } from '../api/client'
-import ProgressBar from '../components/ProgressBar'
+import { getDashboard, getLessonTopics, getReadiness, getTodayPlan } from '../api/client'
 import HorizontalBarChart from '../components/HorizontalBarChart'
+import PlanTaskQueue from '../components/PlanTaskQueue'
+import ProgressBar from '../components/ProgressBar'
 import RoadmapPreview, { Stage2LockedCard } from '../components/RoadmapPreview'
 import { extractSkillBars } from '../utils/skillBars'
 import { findCurrentLesson } from '../utils/roadmapStatus'
 
 const QUICK_ACTIONS = [
+  { to: '/reading', label: 'Reading' },
+  { to: '/listening', label: 'Listening' },
   { to: '/speaking', label: 'Speaking' },
   { to: '/shadowing', label: 'Shadowing' },
   { to: '/vocab', label: 'Vocabulary' },
   { to: '/writing', label: 'Writing' },
 ]
 
-export default function Dashboard() {
+export default function Today() {
   const [data, setData] = useState(null)
   const [readiness, setReadiness] = useState(null)
   const [roadmap, setRoadmap] = useState(null)
+  const [plan, setPlan] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [planError, setPlanError] = useState('')
 
   useEffect(() => {
-    async function loadDashboard() {
-      const [dashboardResult, readinessResult, roadmapResult] = await Promise.allSettled([
+    async function loadToday() {
+      const [dashboardResult, readinessResult, roadmapResult, planResult] = await Promise.allSettled([
         getDashboard(),
         getReadiness(),
         getLessonTopics(),
+        getTodayPlan(),
       ])
 
       if (dashboardResult.status === 'fulfilled') {
         setData(dashboardResult.value)
       } else {
-        setError(dashboardResult.reason?.message || 'Failed to load dashboard')
+        setError(dashboardResult.reason?.message || 'Failed to load today')
       }
       if (readinessResult.status === 'fulfilled') {
         setReadiness(readinessResult.value)
@@ -40,9 +46,12 @@ export default function Dashboard() {
       if (roadmapResult.status === 'fulfilled') {
         setRoadmap(roadmapResult.value)
       }
+      if (planResult.status === 'fulfilled') {
+        setPlan(planResult.value)
+      }
       setLoading(false)
     }
-    loadDashboard()
+    loadToday()
   }, [])
 
   const stage1 = useMemo(
@@ -56,11 +65,11 @@ export default function Dashboard() {
   )
 
   if (loading) {
-    return <p className="muted">Loading dashboard…</p>
+    return <p className="muted">Loading today…</p>
   }
 
   if (error || !data) {
-    return <p className="error">{error || 'Dashboard unavailable'}</p>
+    return <p className="error">{error || 'Today unavailable'}</p>
   }
 
   const {
@@ -78,7 +87,7 @@ export default function Dashboard() {
   const focusTitle = todayFocus?.title || coachFocus?.main_weakness || 'Balanced daily practice'
   const focusWhy = todayFocus?.why_it_matters || coachFocus?.why_it_matters
   const focusTaskTitle = focusAction?.title || coachFocus?.recommended_action
-  const focusRoute = focusAction?.route || coachFocus?.action_route || '/plan'
+  const focusRoute = focusAction?.route || coachFocus?.action_route || '/today'
   const focusButtonLabel = focusAction?.label || coachFocus?.action_label || 'Start focus task'
   const vocabDueMessage = emptyStates.vocab_due_message
 
@@ -91,9 +100,9 @@ export default function Dashboard() {
   const weakSkills = journey?.skills_needing_review || []
 
   return (
-    <div className="page dashboard-page dashboard-compact">
+    <div className="page dashboard-page dashboard-compact today-page">
       <header className="dashboard-header-compact">
-        <h1>Dashboard</h1>
+        <h1>Today</h1>
       </header>
 
       <div className="dashboard-top-grid">
@@ -139,8 +148,8 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-            <Link to="/readiness" className="btn btn-sm btn-secondary">
-              Open readiness check
+            <Link to="/progress" className="btn btn-sm btn-secondary">
+              Open progress check
             </Link>
           </section>
         )}
@@ -161,7 +170,6 @@ export default function Dashboard() {
             <Link to={focusRoute} className="btn btn-sm">
               {focusButtonLabel}
             </Link>
-            <Link to="/plan" className="btn btn-sm btn-secondary">View full plan</Link>
           </div>
           {vocabDueMessage && (
             <p className="muted dashboard-vocab-due dashboard-vocab-due-compact">{vocabDueMessage}</p>
@@ -178,6 +186,13 @@ export default function Dashboard() {
           )}
         </section>
       </div>
+
+      <PlanTaskQueue
+        plan={plan}
+        onPlanChange={setPlan}
+        planError={planError}
+        onPlanError={setPlanError}
+      />
 
       <section className="card dashboard-quick-start-compact">
         <h2 className="dashboard-section-title">Quick start</h2>
@@ -226,6 +241,9 @@ export default function Dashboard() {
                   />
                 ))}
               </div>
+              <Link to="/progress" className="btn btn-sm btn-secondary">
+                Full progress check
+              </Link>
             </section>
           )}
           {weaknessData.length > 0 && (

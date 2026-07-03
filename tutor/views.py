@@ -80,6 +80,7 @@ from .serializers import (
     AdminPromptUpdateSerializer,
     ChatRequestSerializer,
     LessonCompleteSerializer,
+    LessonQuizSubmitSerializer,
     LessonStartSerializer,
     ListeningGenerateSerializer,
     ListeningPracticeGenerateSerializer,
@@ -229,11 +230,14 @@ class AdminPromptsListView(APIView):
     permission_classes = [IsStaffUser]
 
     def get(self, request):
+        from django.conf import settings
+
         prompts = PromptTemplate.objects.all().order_by("task_type", "provider")
         return Response(
             {
                 "prompts": [prompt_admin_dict(p) for p in prompts],
                 "provider_notes": PROVIDER_NOTES,
+                "default_ai_provider": getattr(settings, "DEFAULT_AI_PROVIDER", "ollama"),
             }
         )
 
@@ -613,12 +617,80 @@ class LessonCompleteView(APIView):
         )
         progress.save()
 
+        from tutor.plan_completion import auto_complete_plan_items
+
+        plan_items_completed = auto_complete_plan_items(request.user, track="grammar")
+
         return Response(
             {
                 "topic": topic_to_dict(topic),
                 "progress": lesson_progress_to_dict(progress),
+                "plan_items_completed": plan_items_completed,
             }
         )
+
+
+class LessonQuizView(APIView):
+    def get(self, request):
+        topic_id = request.query_params.get("topic_id")
+        if not topic_id:
+            return Response(
+                {"detail": "topic_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            topic_id = int(topic_id)
+        except (TypeError, ValueError):
+            return Response(
+                {"detail": "topic_id must be an integer"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        topic = get_object_or_404(LessonTopic, id=topic_id, is_active=True)
+        if topic_is_locked(request.user, topic):
+            return Response(
+                {"detail": "This lesson is locked until Stage 2 is unlocked."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        from tutor.lesson_quiz import lesson_quiz_payload
+
+        try:
+            payload = lesson_quiz_payload(topic)
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"quiz": payload})
+
+
+class LessonQuizSubmitView(APIView):
+    def post(self, request):
+        serializer = LessonQuizSubmitSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        topic = get_object_or_404(
+            LessonTopic,
+            id=serializer.validated_data["topic_id"],
+            is_active=True,
+        )
+        if topic_is_locked(request.user, topic):
+            return Response(
+                {"detail": "This lesson is locked until Stage 2 is unlocked."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        from tutor.lesson_quiz import score_lesson_quiz
+
+        try:
+            result = score_lesson_quiz(
+                request.user,
+                topic.id,
+                serializer.validated_data["answers"],
+            )
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(result)
 
 
 class ReadingAnalyzeView(APIView):
@@ -1369,6 +1441,10 @@ class ShadowingAttemptView(APIView):
             input_mode="typed",
         )
         save_shadowing_attempt(request.user, item, comparison)
+        from tutor.plan_completion import auto_complete_plan_items
+
+        plan_items_completed = auto_complete_plan_items(request.user, track="shadowing")
+        comparison["plan_items_completed"] = plan_items_completed
         return Response(comparison)
 
 
@@ -1425,7 +1501,41 @@ class ShadowingAttemptAudioView(APIView):
             duration_seconds=duration_seconds,
         )
         save_shadowing_attempt(request.user, item, comparison)
+        from tutor.plan_completion import auto_complete_plan_items
+
+        plan_items_completed = auto_complete_plan_items(request.user, track="shadowing")
+        comparison["plan_items_completed"] = plan_items_completed
         return Response(comparison)
+
+
+class ShadowingFromSentencesView(APIView):
+    """Create user shadowing items from listening (or other) sentence lists."""
+
+    def post(self, request):
+        from tutor.serializers import ShadowingFromSentencesSerializer
+
+        serializer = ShadowingFromSentencesSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        created = []
+        for index, sentence in enumerate(serializer.validated_data["sentences"]):
+            text = sentence.strip()
+            if not text:
+                continue
+            item = ShadowingItem.objects.create(
+                user=request.user,
+                target_text=text,
+                sort_order=9000 + index,
+            )
+            created.append(shadowing_item_to_dict(item))
+
+        if not created:
+            return Response(
+                {"detail": "At least one non-empty sentence is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response({"items": created}, status=status.HTTP_201_CREATED)
 
 
 class TTSView(APIView):

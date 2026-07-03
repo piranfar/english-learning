@@ -11,7 +11,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false)
 
   if (!loading && authenticated) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/today" replace />
   }
 
   async function handleSubmit(event) {
@@ -20,7 +20,7 @@ export default function Login() {
     setError('')
     try {
       await login(username, password)
-      navigate('/dashboard')
+      navigate('/today')
     } catch (err) {
       setError(err.message || 'Login failed')
     } finally {

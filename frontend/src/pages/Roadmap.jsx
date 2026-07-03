@@ -58,8 +58,8 @@ export default function Roadmap() {
     return (
       <div className="page roadmap-page">
         <p className="error">{error || 'Roadmap unavailable'}</p>
-        <Link to="/dashboard" className="btn btn-secondary btn-sm">
-          Back to dashboard
+        <Link to="/today" className="btn btn-secondary btn-sm">
+          Back to today
         </Link>
       </div>
     )
@@ -76,8 +76,8 @@ export default function Roadmap() {
         <div>
           <h1>Curriculum roadmap</h1>
         </div>
-        <Link to="/dashboard" className="btn btn-secondary btn-sm">
-          Back to dashboard
+        <Link to="/today" className="btn btn-secondary btn-sm">
+          Back to today
         </Link>
       </header>
 

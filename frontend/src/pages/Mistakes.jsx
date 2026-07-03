@@ -72,17 +72,7 @@ function MistakeGroup({ group, focusId, defaultOpen }) {
           <Link to={practiceRoute} className="btn btn-secondary btn-sm">
             Practice similar mistakes
           </Link>
-        ) : (
-          // TODO: Add category-specific practice routes for grammar/writing mistake groups.
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            disabled
-            title="Similar-mistake practice for this category is not available yet."
-          >
-            Practice similar mistakes
-          </button>
-        )}
+        ) : null}
       </div>
 
       <button

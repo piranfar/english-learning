@@ -4,9 +4,8 @@ import { useAuth } from '../auth/AuthContext'
 import { useTheme } from '../hooks/useTheme'
 
 const NAV_ITEMS = [
-  { to: '/dashboard', label: 'Dashboard', end: true },
-  { to: '/readiness', label: 'Readiness', end: true },
-  { to: '/plan', label: 'Plan', end: true },
+  { to: '/today', label: 'Today', end: true },
+  { to: '/progress', label: 'Progress', end: true },
   { to: '/lesson', label: 'Lesson', end: true },
   { to: '/speaking', label: 'Speaking', end: true },
   { to: '/shadowing', label: 'Shadowing', end: true },
@@ -41,7 +40,7 @@ export default function AppShell({ children, showNav = true }) {
       <header className="app-header">
         <div className="header-inner">
           <div className="header-brand">
-            <Link to={authenticated ? '/dashboard' : '/login'} className="app-title">
+            <Link to={authenticated ? '/today' : '/login'} className="app-title">
               FluentBridge AI
             </Link>
             <p className="app-subtitle">

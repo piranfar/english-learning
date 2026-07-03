@@ -279,7 +279,7 @@ def build_track_plan_item(
         "status": _status_from_completed(completed),
         "completed": completed,
         "reason": reason or build_track_reason(track),
-        "route": TRACK_ROUTES.get(track, "/dashboard"),
+        "route": TRACK_ROUTES.get(track, "/today"),
         "metadata": {"practice_track": track},
     }
 

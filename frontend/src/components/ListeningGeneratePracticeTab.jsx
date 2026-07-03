@@ -56,7 +56,15 @@ const SPEEDS = [
   { value: 'toefl_like', label: 'TOEFL-like' },
 ]
 
-export default function ListeningGeneratePracticeTab({ provider, loading, setLoading, setError }) {
+export default function ListeningGeneratePracticeTab({
+  provider,
+  loading,
+  setLoading,
+  setError,
+  onSessionChange,
+  onProgressSaved,
+  tabVariant = 'generate',
+}) {
   const [searchParams] = useSearchParams()
   const [level, setLevel] = useState('B1')
   const [stage, setStage] = useState('b2_toefl_80')
@@ -95,6 +103,10 @@ export default function ListeningGeneratePracticeTab({ provider, loading, setLoa
     if (paramLength) setLength(paramLength)
   }, [searchParams])
 
+  useEffect(() => {
+    onSessionChange?.(session, { level, listeningType, contextNote })
+  }, [session, level, listeningType, contextNote, onSessionChange])
+
   async function handleGenerate(event) {
     event.preventDefault()
     if (loading) return
@@ -125,93 +137,98 @@ export default function ListeningGeneratePracticeTab({ provider, loading, setLoa
     }
   }
 
+  if (loading && !session) {
+    return (
+      <div className="listening-loading card">
+        <p>Generating original listening practice…</p>
+      </div>
+    )
+  }
+
   return (
     <div className="listening-generate-panel">
       {!session ? (
-        <form onSubmit={handleGenerate} className="reading-quiz-controls card card-compact">
-          <p className="muted">
-            Choose what to listen to. We&apos;ll generate an original transcript, read it aloud with
-            your browser, and quiz you on it once you&apos;re ready.
+        <>
+          <p className="muted listening-helper">
+            {tabVariant === 'quiz'
+              ? 'Upload or paste audio, then answer comprehension questions with the transcript hidden.'
+              : 'Set your filters, generate an original listening passage, then answer questions after you listen.'}
           </p>
-          {contextNote && <p className="muted">{contextNote}</p>}
+          <form onSubmit={handleGenerate} className="listening-filter-row card card-compact">
+            {contextNote && <p className="muted reading-context-note">Current lesson: {contextNote}</p>}
 
-          <div className="form-row">
-            <label className="form-field">
-              Level
-              <select value={level} onChange={(e) => setLevel(e.target.value)} disabled={loading}>
-                {LEVELS.map((entry) => (
-                  <option key={entry.value} value={entry.value}>{entry.label}</option>
-                ))}
-              </select>
-            </label>
-            <label className="form-field">
-              Stage
-              <select value={stage} onChange={(e) => setStage(e.target.value)} disabled={loading}>
-                {STAGES.map((entry) => (
-                  <option key={entry.value} value={entry.value}>{entry.label}</option>
-                ))}
-              </select>
-            </label>
-            <label className="form-field">
-              Listening type
-              <select
-                value={listeningType}
-                onChange={(e) => setListeningType(e.target.value)}
-                disabled={loading}
-              >
-                {LISTENING_TYPES.map((entry) => (
-                  <option key={entry.value} value={entry.value}>{entry.label}</option>
-                ))}
-              </select>
-            </label>
-          </div>
+            <div className="listening-filter-grid">
+              <label className="form-field">
+                Level
+                <select value={level} onChange={(e) => setLevel(e.target.value)} disabled={loading}>
+                  {LEVELS.map((entry) => (
+                    <option key={entry.value} value={entry.value}>{entry.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="form-field">
+                Stage
+                <select value={stage} onChange={(e) => setStage(e.target.value)} disabled={loading}>
+                  {STAGES.map((entry) => (
+                    <option key={entry.value} value={entry.value}>{entry.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="form-field">
+                Listening type
+                <select
+                  value={listeningType}
+                  onChange={(e) => setListeningType(e.target.value)}
+                  disabled={loading}
+                >
+                  {LISTENING_TYPES.map((entry) => (
+                    <option key={entry.value} value={entry.value}>{entry.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="form-field">
+                Topic
+                <select value={topic} onChange={(e) => setTopic(e.target.value)} disabled={loading}>
+                  {TOPICS.map((entry) => (
+                    <option key={entry} value={entry}>{entry}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="form-field">
+                Lesson focus
+                <select
+                  value={lessonFocus}
+                  onChange={(e) => setLessonFocus(e.target.value)}
+                  disabled={loading}
+                >
+                  {LESSON_FOCUSES.map((entry) => (
+                    <option key={entry.value} value={entry.value}>{entry.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="form-field">
+                Length
+                <select value={length} onChange={(e) => setLength(e.target.value)} disabled={loading}>
+                  {LENGTHS.map((entry) => (
+                    <option key={entry.value} value={entry.value}>{entry.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="form-field">
+                Speed
+                <select value={speed} onChange={(e) => setSpeed(e.target.value)} disabled={loading}>
+                  {SPEEDS.map((entry) => (
+                    <option key={entry.value} value={entry.value}>{entry.label}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
-          <div className="form-row">
-            <label className="form-field">
-              Topic
-              <select value={topic} onChange={(e) => setTopic(e.target.value)} disabled={loading}>
-                {TOPICS.map((entry) => (
-                  <option key={entry} value={entry}>{entry}</option>
-                ))}
-              </select>
-            </label>
-            <label className="form-field">
-              Lesson focus
-              <select
-                value={lessonFocus}
-                onChange={(e) => setLessonFocus(e.target.value)}
-                disabled={loading}
-              >
-                {LESSON_FOCUSES.map((entry) => (
-                  <option key={entry.value} value={entry.value}>{entry.label}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <div className="form-row">
-            <label className="form-field">
-              Length
-              <select value={length} onChange={(e) => setLength(e.target.value)} disabled={loading}>
-                {LENGTHS.map((entry) => (
-                  <option key={entry.value} value={entry.value}>{entry.label}</option>
-                ))}
-              </select>
-            </label>
-            <label className="form-field">
-              Speed
-              <select value={speed} onChange={(e) => setSpeed(e.target.value)} disabled={loading}>
-                {SPEEDS.map((entry) => (
-                  <option key={entry.value} value={entry.value}>{entry.label}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <button type="submit" disabled={loading}>
-            {loading ? 'Generating listening practice…' : 'Generate listening practice'}
-          </button>
-        </form>
+            <button type="submit" disabled={loading}>
+              {loading ? 'Generating listening practice…' : 'Generate listening practice'}
+            </button>
+          </form>
+        </>
       ) : (
         <ListeningSessionPanel
           session={session}
@@ -219,6 +236,7 @@ export default function ListeningGeneratePracticeTab({ provider, loading, setLoa
           setLoading={setLoading}
           setError={setError}
           onReset={() => setSession(null)}
+          onProgressSaved={onProgressSaved}
         />
       )}
     </div>

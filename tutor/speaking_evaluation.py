@@ -403,8 +403,13 @@ def run_speaking_evaluation(
     if speaking_feedback:
         persist_speaking_feedback_mistakes(user, session.track, speaking_feedback)
 
+    from tutor.plan_completion import auto_complete_plan_items
+
+    plan_items_completed = auto_complete_plan_items(user, track="speaking")
+
     return {
         "reply": reply,
         "corrections": [],
         "speaking_feedback": speaking_feedback,
+        "plan_items_completed": plan_items_completed,
     }

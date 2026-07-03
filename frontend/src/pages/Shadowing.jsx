@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   getShadowingItems,
   submitShadowingAudio,
@@ -27,6 +28,8 @@ function modeLabel(modeId) {
 }
 
 export default function Shadowing() {
+  const location = useLocation()
+  const focusItemId = location.state?.focusItemId
   const [allItems, setAllItems] = useState([])
   const [shadowingMode, setShadowingMode] = useState('listen_repeat')
   const [difficulty, setDifficulty] = useState('normal')
@@ -41,10 +44,16 @@ export default function Shadowing() {
   const [result, setResult] = useState(null)
   const [progressKey, setProgressKey] = useState(0)
 
-  const items = useMemo(
-    () => filterShadowingItems(allItems, { sentenceSet, difficulty }),
-    [allItems, sentenceSet, difficulty],
-  )
+  const items = useMemo(() => {
+    let filtered = filterShadowingItems(allItems, { sentenceSet, difficulty })
+    if (focusItemId) {
+      const focusItem = allItems.find((item) => item.id === focusItemId)
+      if (focusItem && !filtered.some((item) => item.id === focusItemId)) {
+        filtered = [focusItem, ...filtered]
+      }
+    }
+    return filtered
+  }, [allItems, sentenceSet, difficulty, focusItemId])
 
   const activeItem = items[activeIndex] || null
   const blindMode = shadowingMode === 'blind'
@@ -68,6 +77,14 @@ export default function Shadowing() {
     setResult(null)
     setShowMeaning(false)
   }, [sentenceSet, difficulty, shadowingMode])
+
+  useEffect(() => {
+    if (!focusItemId || !items.length) return
+    const idx = items.findIndex((item) => item.id === focusItemId)
+    if (idx >= 0) {
+      setActiveIndex(idx)
+    }
+  }, [focusItemId, items])
 
   const persistResult = useCallback(
     (data, inputMode) => {

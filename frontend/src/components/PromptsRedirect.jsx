@@ -12,5 +12,5 @@ export default function PromptsRedirect() {
     return <Navigate to="/admin/prompts" replace />
   }
 
-  return <Navigate to="/dashboard" replace />
+  return <Navigate to="/today" replace />
 }

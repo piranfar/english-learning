@@ -49,6 +49,10 @@ class PromptTemplateAdmin(admin.ModelAdmin):
         "is_active",
         "updated_at",
     )
+    list_filter = ("task_type", "provider", "is_active")
+    list_editable = ("model_name", "temperature", "max_tokens", "is_active")
+    search_fields = ("title", "task_type", "model_name", "system_prompt")
+    ordering = ("task_type", "provider")
 
 
 @admin.register(PracticeSession)

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import ExamTextArea from '../ExamTextArea'
-import { generateWritingEditPractice, submitWritingEdit } from '../../api/client'
+import { compareWritingRevision, generateWritingEditPractice, submitWritingEdit } from '../../api/client'
 import { EDIT_STRENGTHS, EDIT_STYLES, EDIT_LANGUAGE_LEVELS, normalizeEditStyle, normalizeEditLanguageLevel, describeEditSettings } from '../../data/writingTools'
 import { loadToolState, saveToolState, TOOL_STORAGE_KEYS } from '../../services/writingToolsStorage'
 import TextDiffView from './TextDiffView'
@@ -38,6 +38,8 @@ export default function WritingEditingTab({ provider, onProviderChange, prompts 
   const [editResult, setEditResult] = useState(null)
   const [learnerEdited, setLearnerEdited] = useState('')
   const [showCompare, setShowCompare] = useState(false)
+  const [compareLoading, setCompareLoading] = useState(false)
+  const [compareResult, setCompareResult] = useState(null)
   const [generateLoading, setGenerateLoading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -131,6 +133,7 @@ export default function WritingEditingTab({ provider, onProviderChange, prompts 
     setLoading(true)
     setError('')
     setShowCompare(false)
+    setCompareResult(null)
 
     try {
       const data = await submitWritingEdit({
@@ -149,6 +152,29 @@ export default function WritingEditingTab({ provider, onProviderChange, prompts 
       setError(extractFieldError(err))
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleCompareRevision() {
+    if (!aiText.trim() || compareLoading) return
+
+    setCompareLoading(true)
+    setError('')
+    setShowCompare(true)
+
+    try {
+      const data = await compareWritingRevision({
+        originalAnswer: inputText,
+        revisedAnswer: learnerEdited,
+        prompt: useOwnText ? '' : 'Writing edit practice paragraph',
+        provider,
+      })
+      setCompareResult(data.comparison || null)
+    } catch (err) {
+      setError(extractFieldError(err))
+      setCompareResult(null)
+    } finally {
+      setCompareLoading(false)
     }
   }
 
@@ -369,15 +395,47 @@ export default function WritingEditingTab({ provider, onProviderChange, prompts 
           <button
             type="button"
             className="btn btn-secondary"
-            onClick={() => setShowCompare(true)}
-            disabled={!aiText.trim()}
+            onClick={handleCompareRevision}
+            disabled={!aiText.trim() || compareLoading}
           >
-            Compare with AI version
+            {compareLoading ? 'Comparing…' : 'Compare with AI version'}
           </button>
 
           {showCompare && (
             <div className="writing-compare-section">
               <TextDiffView aiText={aiText} learnerText={learnerEdited} />
+
+              {compareResult && (
+                <div className="writing-revision-compare card">
+                  {compareResult.improvement_summary && (
+                    <p><strong>Summary:</strong> {compareResult.improvement_summary}</p>
+                  )}
+                  {compareResult.improvements?.length > 0 && (
+                    <div className="writing-tool-block">
+                      <span className="label">Improvements in your revision</span>
+                      <ul className="writing-edit-list">
+                        {compareResult.improvements.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {compareResult.remaining_issues?.length > 0 && (
+                    <div className="writing-tool-block">
+                      <span className="label">Still to work on</span>
+                      <ul className="writing-edit-list">
+                        {compareResult.remaining_issues.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {compareResult.score_change_note && (
+                    <p className="muted">{compareResult.score_change_note}</p>
+                  )}
+                </div>
+              )}
+
               <div className="writing-side-by-side">
                 <div>
                   <span className="label">AI corrected (reference)</span>

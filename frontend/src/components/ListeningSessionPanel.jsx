@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import ExamTextArea from './ExamTextArea'
 import ListeningPlayer from './ListeningPlayer'
 import { useDeveloperMode } from '../hooks/useDeveloperMode'
-import { apiRequest } from '../api/client'
+import { apiRequest, createShadowingFromSentences } from '../api/client'
+import { sendSentencesToShadowing } from '../services/listeningShadowing'
+import { saveListeningAttempt } from '../services/listeningStorage'
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D']
 
@@ -13,9 +15,12 @@ export default function ListeningSessionPanel({
   setLoading,
   setError,
   onReset,
+  onProgressSaved,
 }) {
   const devMode = useDeveloperMode()
+  const navigate = useNavigate()
   const [notes, setNotes] = useState('')
+  const [shadowingLoading, setShadowingLoading] = useState(false)
   const [quizStarted, setQuizStarted] = useState(false)
   const [answers, setAnswers] = useState({})
   const [submitted, setSubmitted] = useState(false)
@@ -40,6 +45,12 @@ export default function ListeningSessionPanel({
       })
       setResult(data)
       setSubmitted(true)
+      saveListeningAttempt({
+        session_id: session.session_id,
+        score_percent: data.score?.percent,
+        listening_type: session.listening_type,
+      })
+      onProgressSaved?.()
     } catch (err) {
       setError(err.message || 'Failed to submit answers')
     } finally {
@@ -50,6 +61,23 @@ export default function ListeningSessionPanel({
   function handleAnswerChange(questionId, optionIndex) {
     if (submitted) return
     setAnswers((prev) => ({ ...prev, [questionId]: optionIndex }))
+  }
+
+  async function handleSendToShadowing() {
+    if (!session?.shadowing_sentences?.length || shadowingLoading) return
+    setShadowingLoading(true)
+    setError('')
+    try {
+      await sendSentencesToShadowing(
+        session.shadowing_sentences,
+        navigate,
+        createShadowingFromSentences,
+      )
+    } catch (err) {
+      setError(err.message || 'Could not open Shadowing practice')
+    } finally {
+      setShadowingLoading(false)
+    }
   }
 
   if (!session) return null
@@ -215,17 +243,13 @@ export default function ListeningSessionPanel({
                     {session.shadowing_sentences.length === 1 ? '' : 's'} from this transcript could
                     help your pronunciation practice.
                   </p>
-                  {/* TODO: Shadowing currently only supports a fixed library of ShadowingItem
-                      rows (see ShadowingItemsListView) with no endpoint to create ad-hoc items
-                      from arbitrary sentences. Wire this up once Shadowing supports either a
-                      query-param prefill or a "create from text" endpoint. */}
                   <button
                     type="button"
                     className="btn btn-secondary btn-sm"
-                    disabled
-                    title="Sending sentences directly to Shadowing isn't available yet."
+                    onClick={handleSendToShadowing}
+                    disabled={shadowingLoading}
                   >
-                    Send difficult sentences to Shadowing
+                    {shadowingLoading ? 'Opening Shadowing…' : 'Practice in Shadowing'}
                   </button>
                 </div>
               )}

@@ -1176,6 +1176,72 @@
   }
 }
 
+.listening-page-compact .page-lead {
+  display: none;
+}
+
+.listening-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  margin: 0.75rem 0 1rem;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.listening-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.listening-summary-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-muted);
+}
+
+.listening-tabs .tab {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.85rem;
+}
+
+.listening-helper {
+  margin: 0 0 0.65rem;
+  font-size: 0.9rem;
+}
+
+.listening-generate-panel {
+  margin-top: 0;
+}
+
+.listening-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.listening-filter-row button[type='submit'] {
+  width: 100%;
+}
+
+.listening-loading {
+  padding: 1.25rem;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .listening-summary-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .vocab-list {
   display: flex;
   flex-direction: column;
@@ -1661,6 +1727,81 @@
 .admin-prompt-item.active {
   border-color: var(--color-primary);
   background: var(--color-primary-soft);
+}
+
+.admin-prompts-list-lead {
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.admin-prompt-group {
+  margin-bottom: 0.5rem;
+}
+
+.admin-prompt-group-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  cursor: pointer;
+  text-align: left;
+}
+
+.admin-prompt-model {
+  font-size: 0.82rem;
+  color: var(--color-text);
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+
+.admin-prompt-item-live {
+  border-color: var(--color-success, #059669);
+}
+
+.admin-prompt-live-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-success, #059669);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.admin-prompt-live-note {
+  margin: 0.35rem 0 0;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: var(--color-primary-soft);
+  font-size: 0.88rem;
+}
+
+.admin-model-field {
+  flex: 1.5;
+}
+
+.form-hint {
+  display: block;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.lesson-next-card {
+  margin-bottom: 1rem;
+}
+
+.lesson-next-title {
+  font-size: 1.15rem;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.lesson-next-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .admin-prompt-editor-header {
@@ -3746,9 +3887,77 @@
   gap: 0.85rem;
 }
 
+.readiness-header-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .readiness-header-compact h1 {
   margin: 0;
   font-size: 1.5rem;
+}
+
+/* ===== Lesson quiz ===== */
+
+.lesson-quiz-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lesson-quiz-lead {
+  margin: 0.25rem 0 0;
+}
+
+.lesson-quiz-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.lesson-quiz-question {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 0.75rem;
+  margin: 0;
+}
+
+.lesson-quiz-question legend {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.lesson-quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.lesson-quiz-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  cursor: pointer;
+}
+
+.lesson-quiz-results h3 {
+  margin: 0 0 0.35rem;
+}
+
+.lesson-quiz-result-list {
+  margin: 0.75rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.lesson-quiz-result-list .is-correct {
+  color: var(--color-success, #15803d);
+}
+
+.lesson-quiz-result-list .is-wrong {
+  color: var(--color-danger, #b91c1c);
 }
 
 .readiness-goal-card {
@@ -4439,6 +4648,24 @@
 .plan-page-header h1 {
   margin: 0;
   font-size: 1.5rem;
+}
+
+.today-plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.today-plan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.today-plan-header .dashboard-section-title {
+  margin: 0;
 }
 
 .plan-summary-strip {

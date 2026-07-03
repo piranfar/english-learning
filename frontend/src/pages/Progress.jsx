@@ -56,34 +56,34 @@ const NEXT_ACTIONS = [
   },
   { key: 'vocab', label: 'Review vocabulary', to: '/vocab' },
   { key: 'reading', label: 'Start reading practice', to: '/reading' },
-  { key: 'listening', label: 'Start listening practice', to: '/listening?mode=generate' },
+  { key: 'listening', label: 'Start listening practice', to: '/listening?tab=generate' },
   { key: 'mistakes', label: 'Open mistake clinic', to: '/mistakes' },
 ]
 
-export default function Readiness() {
+export default function Progress() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    async function loadReadiness() {
+    async function loadProgress() {
       try {
         setData(await getReadiness())
       } catch (err) {
-        setError(err.message || 'Failed to load readiness check')
+        setError(err.message || 'Failed to load progress')
       } finally {
         setLoading(false)
       }
     }
-    loadReadiness()
+    loadProgress()
   }, [])
 
   if (loading) {
-    return <p className="muted">Loading readiness check…</p>
+    return <p className="muted">Loading progress…</p>
   }
 
   if (error || !data) {
-    return <p className="error">{error || 'Readiness check unavailable'}</p>
+    return <p className="error">{error || 'Progress unavailable'}</p>
   }
 
   const goal = data.current_goal
@@ -95,7 +95,10 @@ export default function Readiness() {
   return (
     <div className="page readiness-page readiness-compact">
       <header className="readiness-header-compact">
-        <h1>Readiness Check</h1>
+        <h1>Progress</h1>
+        <Link to="/today" className="btn btn-secondary btn-sm">
+          Back to today
+        </Link>
       </header>
 
       <section className="card readiness-goal-card">
@@ -115,7 +118,7 @@ export default function Readiness() {
         )}
       </section>
 
-      <section className="readiness-summary-strip" aria-label="Readiness summary">
+      <section className="readiness-summary-strip" aria-label="Progress summary">
         <div className="readiness-summary-item">
           <span className="readiness-summary-label">Overall readiness</span>
           <strong>{readyCount}/{totalCount} ready</strong>
@@ -139,7 +142,7 @@ export default function Readiness() {
       </section>
 
       <section className="card readiness-chart-card">
-        <h2 className="readiness-chart-title">Readiness chart</h2>
+        <h2 className="readiness-chart-title">Stage readiness</h2>
         <div className="readiness-grid">
           {criteria.map((item) => {
             const badge = statusBadge(item)

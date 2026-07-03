@@ -75,6 +75,20 @@ class PromptTemplate(models.Model):
         return self.title
 
 
+class TaskProviderSetting(models.Model):
+    """Staff-selected AI provider for each task type (grammar, reading, etc.)."""
+
+    task_type = models.CharField(max_length=100, unique=True)
+    provider = models.CharField(max_length=50)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["task_type"]
+
+    def __str__(self):
+        return f"{self.task_type} → {self.provider}"
+
+
 class PracticeSession(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     track = models.CharField(max_length=100)
@@ -160,6 +174,7 @@ class LessonTopic(models.Model):
     category = models.CharField(max_length=80, default="grammar")
     stage_slug = models.CharField(max_length=80, default="b2_toefl_80", db_index=True)
     description = models.TextField(blank=True)
+    quiz_questions_json = models.JSONField(default=list, blank=True)
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

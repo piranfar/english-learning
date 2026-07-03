@@ -34,9 +34,12 @@ function safeSet(key, value) {
 
 export function createEmptySession(overrides = {}) {
   const now = new Date().toISOString()
+  const topicId = overrides.topicId ?? null
   return {
     version: STORAGE_VERSION,
-    id: overrides.id || `local_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    id:
+      overrides.id ||
+      (topicId != null ? sessionIdForTopic(topicId) : createLocalSessionId()),
     pageKey: overrides.pageKey || 'lesson',
     backendSessionId: overrides.backendSessionId ?? null,
     track: overrides.track || 'grammar_coach',
@@ -103,22 +106,66 @@ export function clearCurrentSession() {
 export function loadRecentSessions(limit = MAX_HISTORY) {
   const data = safeParse(localStorage.getItem(KEYS.sessions))
   if (!Array.isArray(data)) return []
-  return data
-    .map(normalizeSession)
-    .filter(Boolean)
-    .sort((a, b) => new Date(b.lastUpdatedAt) - new Date(a.lastUpdatedAt))
-    .slice(0, limit)
+  return dedupeSessionsByTopic(
+    data
+      .map(normalizeSession)
+      .filter(Boolean)
+      .sort((a, b) => new Date(b.lastUpdatedAt) - new Date(a.lastUpdatedAt)),
+  ).slice(0, limit)
+}
+
+function dedupeSessionsByTopic(sessions) {
+  const byKey = new Map()
+  for (const session of sessions) {
+    const key =
+      session.topicId != null
+        ? `topic:${session.topicId}`
+        : session.courseId || session.id
+    const existing = byKey.get(key)
+    if (!existing || new Date(session.lastUpdatedAt) > new Date(existing.lastUpdatedAt)) {
+      byKey.set(key, session)
+    }
+  }
+  return Array.from(byKey.values()).sort(
+    (a, b) => new Date(b.lastUpdatedAt) - new Date(a.lastUpdatedAt),
+  )
 }
 
 export function saveSessionToHistory(session) {
   if (!session?.id) return false
   const normalized = normalizeSession(session)
   const existing = loadRecentSessions(MAX_HISTORY + 5)
-  const filtered = existing.filter((item) => item.id !== normalized.id)
+  const filtered = existing.filter((item) => {
+    if (item.id === normalized.id) return false
+    if (
+      normalized.topicId != null &&
+      item.topicId != null &&
+      item.topicId === normalized.topicId
+    ) {
+      return false
+    }
+    if (
+      normalized.courseId &&
+      item.courseId &&
+      item.courseId === normalized.courseId
+    ) {
+      return false
+    }
+    return true
+  })
   const next = [normalized, ...filtered]
     .sort((a, b) => new Date(b.lastUpdatedAt) - new Date(a.lastUpdatedAt))
     .slice(0, MAX_HISTORY)
   return safeSet(KEYS.sessions, next)
+}
+
+export function sessionIdForTopic(topicId) {
+  if (topicId == null || topicId === '') return createLocalSessionId()
+  return `lesson_topic_${topicId}`
+}
+
+function createLocalSessionId() {
+  return `local_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
 }
 
 export function loadSessionById(sessionId) {
@@ -157,7 +204,7 @@ function normalizeSession(raw) {
   if (!raw || typeof raw !== 'object') return null
   return {
     version: raw.version || STORAGE_VERSION,
-    id: String(raw.id || `local_${Date.now()}`),
+    id: String(raw.id || (raw.topicId != null ? sessionIdForTopic(raw.topicId) : createLocalSessionId())),
     pageKey: raw.pageKey || 'lesson',
     backendSessionId: raw.backendSessionId ?? null,
     track: raw.track || 'grammar_coach',
